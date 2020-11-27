@@ -3,9 +3,6 @@ import Dependencies._
 ThisBuild / organization := "com.aahsk.chromino"
 ThisBuild / scalaVersion := "2.12.10"
 
-libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.2"
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.2" % "test"
-
 lazy val domain = (project in file("domain"))
   .settings(
     name := "domain",
