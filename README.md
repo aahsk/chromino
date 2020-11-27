@@ -1,14 +1,13 @@
 # Chromino
 End-of-bootcamp Scala project. Browser-base, multi-player [Chromino](https://en.wikipedia.org/wiki/Chromino) server/client.
 
-# Knowns
-## Stack
+# Tech stack
 - WebSocket
 - Cats Effect 2
 - http4s
 - In-memory storage
 
-## To do list
+# To do list
 - Game board models and mechanics
 - Bame board chromino piece modeling
 - Validations
