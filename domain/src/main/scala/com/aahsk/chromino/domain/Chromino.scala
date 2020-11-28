@@ -26,14 +26,22 @@ sealed trait Chromino extends Equals {
     val centerColor: Color
     val rightColor: Color
 
-    override def equals(that: Any): Boolean = that match {
-        case chromino: Chromino =>
-            val centerEqual = centerColor == chromino.centerColor
-            val exactEqual = leftColor == chromino.leftColor && rightColor == chromino.rightColor
-            val reverseEqual = leftColor == chromino.rightColor && rightColor == chromino.leftColor
-            centerEqual && (exactEqual || reverseEqual)
-        case _ => true
-    }
+    override def equals(that: Any): Boolean =
+        that match {
+            case chromino: Chromino =>
+                val centerEqual = centerColor == chromino.centerColor
+                val exactEqual = leftColor == chromino.leftColor && rightColor == chromino.rightColor
+                val reverseEqual = leftColor == chromino.rightColor && rightColor == chromino.leftColor
+                centerEqual && (exactEqual || reverseEqual)
+            case _ => true
+        }
+
+    override def hashCode: Int =
+        List(
+            Color.values.indexOf(leftColor),
+            Color.values.indexOf(centerColor),
+            Color.values.indexOf(rightColor)
+        ).sorted.##
 }
 
 case class Regular(
