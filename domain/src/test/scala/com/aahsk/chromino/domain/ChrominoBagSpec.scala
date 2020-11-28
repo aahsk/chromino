@@ -2,10 +2,10 @@ package com.aahsk.chromino.domain
 
 import org.scalatest.flatspec.AnyFlatSpec
 
-class BagSpec extends AnyFlatSpec {
+class ChrominoBagSpec extends AnyFlatSpec {
   // Source - https://boardgamegeek.com/image/708574/chromino
   "bag" should "contain 75 + 5 pieces" in {
-    val pieces = Bag.ofAll().pieces
+    val pieces = ChrominoBag.ofAll().pieces
 
     val regularCount = pieces.count {
       case _: Regular  => true
