@@ -8,11 +8,12 @@ End-of-bootcamp Scala project. Browser-base, multi-player [Chromino](https://en.
 - In-memory storage
 
 # To do list
-- Game board models and mechanics
-- Bame board chromino piece modeling
-- Validations
-- (bonus) Database storage instead of in-memory
-- (bonus) Timer for when a player's time to move expires
-- (bonus) Allow concurrent games (very much intended)
-- (bonus) Game client (Next.js)
+- [x] Game, user, board & chromino piece models 
+- [ ] Model commands expected in protocol
+- [ ] Game model logic / mechanics
+- [ ] Validations
+- [ ] (bonus) Database storage instead of in-memory
+- [ ] (bonus) Timer for when a player's time to move expires
+- [ ] (bonus) Allow concurrent games (very much intended)
+- [ ] (bonus) Game client (Next.js)
 
