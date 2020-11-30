@@ -7,9 +7,8 @@ import Game._
 case class Game(
     id: GameID,
     name: String,
-    bag: Bag,
-    pieces: Map[UserID, Piece],
-    users: List[User],
+    board: Board,
+    users: List[UserID],
     winner: Option[UserID],
     createdAt: LocalTime,
     startedAt: Option[LocalTime]
@@ -17,5 +16,4 @@ case class Game(
 
 object Game {
   type GameID = Int
-  def ofStart(): Game = ???
 }

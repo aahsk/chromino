@@ -12,3 +12,6 @@ object User {
 }
 
 case class AnonymousUser(id: UserID, nick: String, secret: String) extends User
+
+case class LocalUser(id: UserID, nick: String, saltedPasswordHash: String)
+    extends User
