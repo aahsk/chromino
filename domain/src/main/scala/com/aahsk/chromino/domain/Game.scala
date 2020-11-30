@@ -8,12 +8,12 @@ case class Game(
     id: GameID,
     name: String,
     board: Board,
-    users: List[User],
+    users: List[UserID],
     winner: Option[UserID],
     createdAt: LocalTime,
     startedAt: Option[LocalTime]
 )
 
 object Game {
-    type GameID = Int
+  type GameID = Int
 }
