@@ -8,10 +8,15 @@ case class Game(
     id: GameID,
     name: String,
     board: Board,
-    users: List[UserID],
+    creator: UserID,
+    currentTurnChromino: Option[Chromino],
+    currentTurnPlayer: Option[UserID],
+    players: List[UserID],
+    maxPlayerCount: Int,
     winner: Option[UserID],
     createdAt: LocalTime,
-    startedAt: Option[LocalTime]
+    startedAt: Option[LocalTime],
+    finishedAt: Option[LocalTime]
 )
 
 object Game {

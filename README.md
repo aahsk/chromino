@@ -9,9 +9,9 @@ End-of-bootcamp Scala project. Browser-base, multi-player [Chromino](https://en.
 
 # To do list
 - [x] Game, user, board & chromino piece models 
-- [ ] Model commands expected in protocol
+- [ ] Model protocol commands planned in http4s server  
 - [ ] Game model logic / mechanics
-- [ ] Validations
+- [ ] Realize user input validations
 - [ ] (bonus) Database storage instead of in-memory
 - [ ] (bonus) Timer for when a player's time to move expires
 - [ ] (bonus) Allow concurrent games (very much intended)
