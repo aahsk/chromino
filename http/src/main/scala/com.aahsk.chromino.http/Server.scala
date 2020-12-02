@@ -2,7 +2,7 @@ package com.aahsk.chromino.http
 
 import cats.implicits._
 import cats.{Defer, Monad}
-import cats.effect.{Concurrent, ConcurrentEffect, ContextShift, IO, Timer}
+import cats.effect.{Concurrent, ConcurrentEffect, ContextShift, Timer}
 import org.http4s._
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -15,11 +15,18 @@ object Server {
     gameRoutes <+> healthRoutes
   }.orNotFound
 
-  def run[F[_]: Timer: ContextShift: ConcurrentEffect](): F[Unit] =
+  /**
+    * Author's note: Everyone on the internet creates the BlazeServer
+    *  as follows, but it seems that if you go-to-definition then the
+    *  BlaseServer.apply uses ExecutionContext.global instead of
+    *  the expected ContextShift. Not sure how to go about that :/
+    */
+  def run[F[_]: Timer: ContextShift: ConcurrentEffect](): F[Unit] = {
     BlazeServerBuilder[F]
       .bindHttp(port = 9000, host = "localhost")
       .withHttpApp(routes())
       .serve
       .compile
       .drain
+  }
 }
