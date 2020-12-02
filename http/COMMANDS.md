@@ -1,4 +1,8 @@
-# HTTP commands
+# WebSocket commands
+These are written as HTTP paths, but I guess a websocket connection is created per-path.  
+So if I want to only keep one connection open, then all of these should be under one path `/chromino`.  
+And all of the paths here are actually just for example message prefixes.  
+I.e. `/auth/anonymous/register?username` => `auth-anonymous-register <username>`  
 
 ## Auth
 - `/auth/anonymous/register?username` => `{ secret: String }`  
