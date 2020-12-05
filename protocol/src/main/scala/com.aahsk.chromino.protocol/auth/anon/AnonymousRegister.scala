@@ -20,7 +20,11 @@ object AnonymousRegister {
   def ofIncoming(request: GameRequest): Result[IncomingAnonymousRegister] =
     request.message.getData().as[IncomingAnonymousRegister]
 
-  case class OutgoingAnonymousRegister(nick: String, success: Boolean)
+  case class OutgoingAnonymousRegister(
+      nick: String,
+      secret: String,
+      success: Boolean
+  )
   implicit val outgoingCodec: Codec[OutgoingAnonymousRegister] =
     deriveCodec[OutgoingAnonymousRegister]
   def toOutgoing(response: OutgoingAnonymousRegister): GameResponse =

@@ -19,6 +19,7 @@ lazy val domain = (project in file("domain"))
   )
 
 lazy val logic = (project in file("logic"))
+  .dependsOn(domain)
   .settings(commonSettings: _*)
   .settings(
     name := "logic"
@@ -27,6 +28,7 @@ lazy val logic = (project in file("logic"))
 lazy val boot = (project in file("boot"))
   .dependsOn(domain)
   .dependsOn(http)
+  .dependsOn(persistance)
   .settings(commonSettings: _*)
   .settings(
     name := "boot"
@@ -36,6 +38,7 @@ lazy val http = (project in file("http"))
   .dependsOn(domain)
   .dependsOn(logic)
   .dependsOn(protocol)
+  .dependsOn(persistance)
   .settings(commonSettings: _*)
   .settings(
     addCompilerPlugin(
@@ -74,5 +77,9 @@ lazy val persistance = (project in file("persistance"))
   .dependsOn(domain)
   .settings(commonSettings: _*)
   .settings(
-    name := "persistance"
+    name := "persistance",
+    libraryDependencies ++= Seq(
+      Cats.core,
+      Cats.effect
+    )
   )

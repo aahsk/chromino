@@ -2,42 +2,35 @@ package com.aahsk.chromino.http.game
 
 import java.util.concurrent.atomic.AtomicReference
 
-import fs2.Pipe
-import cats.data.{EitherT, OptionT}
-import cats.implicits._
-import cats.effect.Concurrent
-import io.circe.parser._
+import cats.data.OptionT
 import org.http4s._
 import org.http4s.dsl.io._
-import org.http4s.websocket.WebSocketFrame
 import GameSubroute.GameSubroute
 import com.aahsk.chromino.protocol.{
   Connection,
   GameRequest,
-  GameResponse,
   Message => GameMessage
 }
 import com.aahsk.chromino.protocol.Message._
-import org.http4s.server.websocket.WebSocketBuilder
-import cats.effect.Concurrent
+import cats.effect.ConcurrentEffect
 import cats.implicits._
+import com.aahsk.chromino.persistance.Database.Database
 import com.aahsk.chromino.protocol.meta.error.{
   MessageParseError,
   MissingRouteError
 }
 import com.aahsk.chromino.protocol.meta.error.MessageParseError.OutgoingMessageParseError
-import org.http4s.Response
 import org.http4s.websocket.WebSocketFrame
 import fs2.concurrent.Queue
 import org.http4s.server.websocket.WebSocketBuilder
 import fs2.Pipe
 
-case class GameRoute[F[_]: Concurrent]() {
+case class GameRoute[F[_]: ConcurrentEffect](database: Database[F]) {
   def createUpstreamRoutes(
       connectionRef: AtomicReference[Connection]
   ): GameSubroute[F] = {
     val authRoutes: GameSubroute[F] =
-      new AuthRoute[F](connectionRef).createRoutes();
+      new AuthRoute[F](database, connectionRef).createRoutes();
 
     authRoutes <+> authRoutes
   }
