@@ -6,23 +6,21 @@ import cats.effect.{Concurrent, ConcurrentEffect, ContextShift, Timer}
 import org.http4s._
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
+import com.aahsk.chromino.http.game.GameRoute
+import scala.concurrent.ExecutionContext
 
 object Server {
   def routes[F[_]: Monad: Defer: Concurrent](): HttpApp[F] = {
-    val gameRoutes: HttpRoutes[F] = GameRoute.routes[F]();
-    val healthRoutes: HttpRoutes[F] = HealthRoute.routes[F]()
+    val gameRoutes: HttpRoutes[F] = new GameRoute[F]().createRoutes();
+    val healthRoutes: HttpRoutes[F] = new HealthRoute[F]().createRoutes()
 
     gameRoutes <+> healthRoutes
   }.orNotFound
 
-  /**
-    * Author's note: Everyone on the internet creates the BlazeServer
-    *  as follows, but it seems that if you go-to-definition then the
-    *  BlaseServer.apply uses ExecutionContext.global instead of
-    *  the expected ContextShift. Not sure how to go about that :/
-    */
-  def run[F[_]: Timer: ContextShift: ConcurrentEffect](): F[Unit] = {
-    BlazeServerBuilder[F]
+  def run[F[_]: Timer: ContextShift: ConcurrentEffect]()(implicit
+      EC: ExecutionContext
+  ): F[Unit] = {
+    BlazeServerBuilder[F](EC)
       .bindHttp(port = 9000, host = "localhost")
       .withHttpApp(routes())
       .serve

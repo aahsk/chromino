@@ -35,15 +35,24 @@ lazy val boot = (project in file("boot"))
 lazy val http = (project in file("http"))
   .dependsOn(domain)
   .dependsOn(logic)
+  .dependsOn(protocol)
   .settings(commonSettings: _*)
   .settings(
+    addCompilerPlugin(
+      "org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full
+    ),
     name := "http",
     libraryDependencies ++= Seq(
       Log.logBack,
       Cats.core,
       Cats.effect,
       Http4s.dsl,
-      Http4s.blazeServer
+      Http4s.blazeServer,
+      Circe.core,
+      Circe.generic,
+      Circe.genericExtras,
+      Circe.optics,
+      Circe.parser
     )
   )
 
@@ -51,7 +60,14 @@ lazy val protocol = (project in file("protocol"))
   .dependsOn(domain)
   .settings(commonSettings: _*)
   .settings(
-    name := "protocol"
+    name := "protocol",
+    libraryDependencies ++= Seq(
+      Circe.core,
+      Circe.generic,
+      Circe.genericExtras,
+      Circe.optics,
+      Circe.parser
+    )
   )
 
 lazy val persistance = (project in file("persistance"))

@@ -1,7 +1,7 @@
 package com.aahsk.chromino.http
 
-import cats.implicits._
 import cats.effect.Sync
+import cats.implicits._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 
@@ -19,9 +19,4 @@ class HealthRoute[F[_]: Sync] extends Http4sDsl[F] {
   def createRoutes(): HttpRoutes[F] = {
     livenessRoute() <+> readinessRoute()
   }
-}
-
-object HealthRoute {
-  def routes[F[_]: Sync](): HttpRoutes[F] =
-    new HealthRoute[F]().createRoutes()
 }
