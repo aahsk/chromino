@@ -6,13 +6,11 @@ import cats.data.OptionT
 import org.http4s._
 import org.http4s.dsl.io._
 import GameSubroute.GameSubroute
-import com.aahsk.chromino.protocol.{
-  Connection,
-  GameRequest,
-  Message => GameMessage
-}
+import cats.Applicative
+import com.aahsk.chromino.protocol.{Connection, Message => GameMessage}
 import com.aahsk.chromino.protocol.Message._
 import cats.effect.ConcurrentEffect
+import cats.effect.concurrent.Ref
 import cats.implicits._
 import com.aahsk.chromino.persistance.Database.Database
 import com.aahsk.chromino.protocol.meta.error.{
@@ -27,7 +25,7 @@ import fs2.Pipe
 
 case class GameRoute[F[_]: ConcurrentEffect](database: Database[F]) {
   def createUpstreamRoutes(
-      connectionRef: AtomicReference[Connection]
+      connectionRef: Ref[F, Connection]
   ): GameSubroute[F] = {
     val authRoutes: GameSubroute[F] =
       new AuthRoute[F](database, connectionRef).createRoutes();
@@ -41,7 +39,7 @@ case class GameRoute[F[_]: ConcurrentEffect](database: Database[F]) {
     *  into multiple chunks by doing the `Text(message,_)`
     */
   def connectionPipe(
-      connectionRef: AtomicReference[Connection]
+      connectionRef: Ref[F, Connection]
   ): Pipe[F, WebSocketFrame, WebSocketFrame] = {
     import io.circe.parser._
     import io.circe.syntax._
@@ -57,28 +55,23 @@ case class GameRoute[F[_]: ConcurrentEffect](database: Database[F]) {
                   OutgoingMessageParseError(error.toString)
                 )
               ),
-            message => route(GameRequest(message, connectionRef))
+            message => route(message)
           )
           .merge
           .getOrElse(MissingRouteError.toOutgoing())
-          .map(response =>
-            WebSocketFrame.Text(response.message.asJson.noSpaces)
-          )
+          .map(message => WebSocketFrame.Text(message.asJson.noSpaces))
     }
   }
 
   private def gameRoute(): HttpRoutes[F] = {
-    val connectionRef = new AtomicReference(Connection(None))
-    val pipe = connectionPipe(connectionRef)
     HttpRoutes.of[F] {
       case GET -> Root / "game" =>
         for {
-          // Unbounded queue which can OOM only when messages aren't processed quickly enough
+          connectionRef <- Ref.of[F, Connection](Connection(None))
+          pipe <- Applicative[F].pure(connectionPipe(connectionRef))
           queue <- Queue.unbounded[F, WebSocketFrame]
           response <- WebSocketBuilder[F].build(
-            // Sink, where the incoming WebSocket messages from the client are pushed to.
             receive = queue.enqueue,
-            // Outgoing stream of WebSocket messages to send to the client.
             send = queue.dequeue.through(pipe)
           )
         } yield response

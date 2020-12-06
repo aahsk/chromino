@@ -2,7 +2,7 @@ package com.aahsk.chromino.http.game
 
 import cats.{Applicative, Monad}
 import cats.data.{Kleisli, OptionT}
-import com.aahsk.chromino.protocol.{GameRequest, GameResponse, RouteProtocol}
+import com.aahsk.chromino.protocol.{Connection, Message, RouteProtocol}
 import cats.implicits._
 
 /**
@@ -10,27 +10,27 @@ import cats.implicits._
   */
 object GameSubroute {
   type GameSubroute[F[_]] =
-    Kleisli[OptionT[F, *], GameRequest, GameResponse]
+    Kleisli[OptionT[F, *], Message, Message]
 
   def of[F[_]: Applicative](
-      pf: PartialFunction[GameRequest, F[GameResponse]]
+      pf: PartialFunction[Message, F[Message]]
   ): GameSubroute[F] =
     Kleisli(req => OptionT(pf.lift(req).sequence))
 
   def ofProtocol[F[_]: Monad, I, O](
       protocol: RouteProtocol[I, O]
   )(
-      execute: (GameRequest, I) => F[O]
+      execute: I => F[O]
   ): GameSubroute[F] = {
-    Kleisli(request => {
-      if (request.message.path != protocol.path) {
+    Kleisli(message => {
+      if (message.path != protocol.path) {
         OptionT.none
       } else {
         OptionT(
           protocol
-            .decode(request)
+            .decode(message)
             .toOption
-            .traverse(input => execute(request, input))
+            .traverse(input => execute(input))
         ).map(protocol.encode)
       }
     })

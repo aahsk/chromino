@@ -6,4 +6,7 @@ import com.aahsk.chromino.domain.AnonymousUser
 object Auth {
   def createAnonymousUser(nick: String): AnonymousUser =
     AnonymousUser(None, nick, UUID.randomUUID.toString)
+
+  def validateAnonymousAuth(user: AnonymousUser, secret: String): Boolean =
+    user.secret == secret
 }
