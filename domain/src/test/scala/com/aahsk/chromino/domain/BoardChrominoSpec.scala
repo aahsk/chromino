@@ -1,20 +1,20 @@
 package com.aahsk.chromino.domain
 
-import org.scalatest.flatspec.AnyFlatSpec
-import com.aahsk.chromino.domain.Color._
+import com.aahsk.chromino.domain.ChrominoColor._
 import com.aahsk.chromino.domain.Rotation._
+import org.scalatest.freespec.AnyFreeSpec
 
-class BoardChrominoSpec extends AnyFlatSpec {
-  "chromino" should "be processable into colored board squares" in {
-    val chromino = Regular(Red, Blue, Yellow)
+class BoardChrominoSpec extends AnyFreeSpec {
+  "chromino should be processable into colored board squares" in {
+    val chromino = Chromino.RegularRBY
     val boardChromino = BoardChromino(
       chromino,
       Position(2, 2),
-      Deg90
+      W
     )
     val squares = boardChromino.squared()
-    assert(squares.contains(Square(Position(2, 1), Red)))
-    assert(squares.contains(Square(Position(2, 2), Blue)))
-    assert(squares.contains(Square(Position(2, 3), Yellow)))
+    assert(squares.contains(ChrominoSquare(Position(2, 1), R)))
+    assert(squares.contains(ChrominoSquare(Position(2, 2), B)))
+    assert(squares.contains(ChrominoSquare(Position(2, 3), Y)))
   }
 }

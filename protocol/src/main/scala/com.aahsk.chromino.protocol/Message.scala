@@ -1,11 +1,18 @@
 package com.aahsk.chromino.protocol
 
-import io.circe.{Codec, Json}
-import io.circe.generic.semiauto.deriveCodec
+import io.circe.Json
+import scala.scalajs.js.annotation.JSExportTopLevel
 
-case class Message(path: List[String], data: Option[Json]) {
-  def getData(): Json = data.getOrElse(Json.Null)
-}
+sealed trait Message
+
+@JSExportTopLevel("Message")
 object Message {
-  implicit val messageCodec: Codec[Message] = deriveCodec[Message]
+  final case class GameStateMessage(state: GameState) extends Message
+  final case class MessageParseError(error: String)   extends Message
+  final case class GameNotFoundError()                extends Message
+  final case class Ping()                             extends Message
+  final case class Pong()                             extends Message
 }
+
+@JSExportTopLevel("MessageWrap")
+case class MessageWrap(command: String, payload: Json)

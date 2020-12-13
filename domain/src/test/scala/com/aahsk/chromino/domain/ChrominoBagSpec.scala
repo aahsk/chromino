@@ -1,23 +1,11 @@
 package com.aahsk.chromino.domain
 
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.freespec.AnyFreeSpec
 
-class ChrominoBagSpec extends AnyFlatSpec {
+class ChrominoBagSpec extends AnyFreeSpec {
   // Source - https://boardgamegeek.com/image/708574/chromino
-  "bag" should "contain 75 + 5 pieces" in {
-    val pieces = Chromino.all()
-
-    val regularCount = pieces.count {
-      case _: Regular  => true
-      case _: Wildcard => false
-    }
-
-    val wildcardCount = pieces.count {
-      case _: Regular  => false
-      case _: Wildcard => true
-    }
-
-    assert(regularCount == 75)
-    assert(wildcardCount == 5)
+  "bag should contain 75 regular & 5 wildcard pieces" in {
+    assert(Chromino.values.count(_.centerColor == ChrominoColor.X) == 75)
+    assert(Chromino.values.count(_.centerColor != ChrominoColor.X) == 5)
   }
 }

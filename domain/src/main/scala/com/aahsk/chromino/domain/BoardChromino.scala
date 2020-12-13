@@ -1,46 +1,49 @@
 package com.aahsk.chromino.domain
 
+import scala.scalajs.js.annotation._
+
+@JSExportTopLevel("BoardChromino")
 case class BoardChromino(
-    chromino: Chromino,
-    centerPosition: Position,
-    centerRotation: Rotation
+  chromino: Chromino,
+  centerPosition: Position,
+  centerRotation: Rotation
 ) {
-  def squared(): List[Square] = {
+  def squared(): List[ChrominoSquare] = {
     import Rotation._
 
-    val a = Square(
+    val a = ChrominoSquare(
       Position(
         centerRotation match {
-          case Deg0   => centerPosition.x - 1
-          case Deg90  => centerPosition.x
-          case Deg180 => centerPosition.x + 1
-          case Deg270 => centerPosition.x
+          case N => centerPosition.x - 1
+          case W => centerPosition.x
+          case S => centerPosition.x + 1
+          case E => centerPosition.x
         },
         centerRotation match {
-          case Deg0   => centerPosition.y
-          case Deg90  => centerPosition.y - 1
-          case Deg180 => centerPosition.y
-          case Deg270 => centerPosition.y + 1
+          case N => centerPosition.y
+          case W => centerPosition.y - 1
+          case S => centerPosition.y
+          case E => centerPosition.y + 1
         }
       ),
       chromino.leftColor
     )
 
-    val b = Square(centerPosition, chromino.centerColor)
+    val b = ChrominoSquare(centerPosition, chromino.centerColor)
 
-    val c = Square(
+    val c = ChrominoSquare(
       Position(
         centerRotation match {
-          case Deg0   => centerPosition.x + 1
-          case Deg90  => centerPosition.x
-          case Deg180 => centerPosition.x - 1
-          case Deg270 => centerPosition.x
+          case N => centerPosition.x + 1
+          case W => centerPosition.x
+          case S => centerPosition.x - 1
+          case E => centerPosition.x
         },
         centerRotation match {
-          case Deg0   => centerPosition.y
-          case Deg90  => centerPosition.y + 1
-          case Deg180 => centerPosition.y
-          case Deg270 => centerPosition.y - 1
+          case N => centerPosition.y
+          case W => centerPosition.y + 1
+          case S => centerPosition.y
+          case E => centerPosition.y - 1
         }
       ),
       chromino.rightColor
