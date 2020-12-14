@@ -1,22 +1,30 @@
 # Chromino
-End-of-bootcamp Scala project. Browser-base, multi-player [Chromino](https://en.wikipedia.org/wiki/Chromino)
+End-of-bootcamp MVP Scala project. Browser-base, multi-player [Chromino](https://en.wikipedia.org/wiki/Chromino)
 server/client.
 
 # Tech stack
-- WebSocket
-- Cats Effect 2
-- http4s
-- In-memory storage
+- WebSocket [(see game route)](src/main/scala/com.aahsk.chromino.http/GameRoute.scala)
+- Cats Effect 2 (sprinkled literally everywhere) 
+- http4s [(see game route)](src/main/scala/com.aahsk.chromino.http/GameRoute.scala)
+- In-memory storage (Cats Ref) [(see game route storage)](./src/main/scala/com.aahsk.chromino.http/GameRoute.scala)
+- React w/ TypeScript [(see frontend)](./frontend)
+- Scala.js & Circe [(see protocol)](src/main/scala/com.aahsk.chromino.protocol)
+
+# Usage
+- `cd .` => `sbt run` - Starts a server on http://localhost:9000/ (not configurable for MVP)  
+- `cd frontend` => `npm run dev` - Starts a development server on http://localhost:3000/ (not configurable for MVP)  
 
 # To do list
-- [x] Game, user, board & chromino piece models 
-- [ ] Model protocol commands planned in http4s server  
-- [ ] Game model logic / mechanics
+A checked box means the feature has been at least started.   
+
+- [x] Game, user, board & chromino piece models [(see domain)](src/main/scala/com/aahsk/chromino/domain)
+- [x] Model protocol commands planned in http4s server [(see protocol)](src/main/scala/com.aahsk.chromino.protocol)
+- [x] Game model logic / mechanics [(see game controller in logic)](src/main/scala/com.aahsk.chromino.logic/GameController.scala)
 - [ ] Realize user input validations
 - [ ] ~~(bonus) Database storage instead of in-memory~~
 - [ ] ~~(bonus) Timer for when a player's time to move expires~~
-- [X] (bonus) Allow concurrent games
-- [ ] (bonus) Game client (React)
+- [X] (bonus) Allow concurrent games [(see game route)](src/main/scala/com.aahsk.chromino.http/GameRoute.scala)
+- [X] (bonus) Game client (React) [(see frontend)](./frontend)
 
 # Notes from author
 - It seems that `scalatest` is incapable of testing with `ModuleKind.ESModule` enabled, comment it
@@ -31,3 +39,5 @@ server/client.
     `Help => Change Memory Settings`. In addition the IDE can throw `scalac: Error while emitting Codecs.scala; null`
     when trying to run the project, there is no known fix yet. See
     [src/main/scala/com.aahsk.chromino.protocol/Codecs.scala](./src/main/scala/com.aahsk.chromino.protocol/Codecs.scala)
+- The in-memory state shared between multiple web-socket connections is mutable and effectful. It feels quite imperative
+    using it with Cats Ref looks odd. Haven't yet figured out how to make it prettier
