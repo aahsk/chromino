@@ -24,11 +24,11 @@ function Game() {
           Chromino
         </h4>
       </div>
-      <div className="app-wrapper">
-        <div className="app-content">
+      <div className="app-wrapper with-header">
+        <div className="app-content with-header">
           
         </div>
-        <div className="app-sidebar">
+        <div className="app-sidebar with-header">
           <h4>Info</h4>
           <span>
           {socketActive ? "Connection open" : "Connection closed"}

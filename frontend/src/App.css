@@ -19,11 +19,15 @@
 }
 
 .app-wrapper {
-  min-height: calc(100vh - 150px);
+  min-height: 100vh;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
+}
+
+.app-wrapper.with-header {
+  min-height: calc(100vh - 150px);
 }
 
 .app-content {
@@ -33,6 +37,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
+}
+
+.app-content.with-header {
   min-height: calc(100vh - 150px);
 }
 
@@ -42,6 +50,10 @@
   display: flex;
   flex-direction: column;
   text-align: left;
-  min-height: calc(100vh - 150px);
+  min-height: 100vh;
   font-size: calc(10px + 1.5vmin);
+}
+
+.app-sidebar.with-header {
+  min-height: calc(100vh - 150px);
 }

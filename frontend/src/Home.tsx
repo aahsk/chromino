@@ -16,8 +16,6 @@ function Home(props: any) {
   }
   return (
     <div>
-      <div className="app-header">
-      </div>
       <div className="app-wrapper">
         <div className="app-content">
           <h4>
