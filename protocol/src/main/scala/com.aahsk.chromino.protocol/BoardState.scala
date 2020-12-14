@@ -4,7 +4,5 @@ import com.aahsk.chromino.domain.{Board, BoardChromino}
 
 final case class BoardState(pieces: List[BoardChromino])
 object BoardState {
-  def ofBoard(board: Board): Unit = {
-    BoardState(board.pieces)
-  }
+  def of(board: Board): BoardState = BoardState(board.pieces)
 }

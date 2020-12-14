@@ -7,7 +7,7 @@ case class Game(
   players: List[User],
   activePlayerIndex: Int,
   winnerIndex: Option[Int],
-  playerChrominos: Map[String, Chromino],
-  maxPlayerCount: Int,
+  playerChrominos: Map[String, List[Chromino]],
+  expectedPlayerCount: Int,
   waitingPlayers: Boolean
 )

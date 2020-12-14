@@ -3,7 +3,6 @@ package com.aahsk.chromino.protocol
 import com.aahsk.chromino.domain.{BoardChromino, Chromino, ChrominoColor, Position, Rotation, User}
 import io.circe.generic.semiauto.deriveCodec
 import io.circe.{Codec, Decoder, Encoder}
-import io.circe.parser._
 import io.circe.syntax._
 import cats.implicits._
 
@@ -29,6 +28,7 @@ object Codecs {
   implicit val PingCodec: Codec[Ping]                             = deriveCodec[Ping]
   implicit val PongCodec: Codec[Pong]                             = deriveCodec[Pong]
   implicit val ConnectionMigratedCodec: Codec[ConnectionMigrated] = deriveCodec[ConnectionMigrated]
+  implicit val PlayerJoinedCodec: Codec[PlayerJoined]             = deriveCodec[PlayerJoined]
 
   // Message
   implicit val MessageWrapCodec: Codec[MessageWrap] = deriveCodec[MessageWrap]
@@ -45,6 +45,8 @@ object Codecs {
       Decoder[Pong].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap("connectionMigrated", payload) =>
       Decoder[ConnectionMigrated].widen[Message].decodeJson(payload).leftMap(_.message)
+    case MessageWrap("playerJoined", payload) =>
+      Decoder[PlayerJoined].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap(_, _) => Left("Unknown command constant")
   }
   implicit val MessageEncoder: Encoder[Message] = Encoder.instance {
@@ -54,6 +56,7 @@ object Codecs {
     case m: Ping               => MessageWrap("ping", m.asJson).asJson
     case m: Pong               => MessageWrap("pong", m.asJson).asJson
     case m: ConnectionMigrated => MessageWrap("connectionMigrated", m.asJson).asJson
+    case m: PlayerJoined       => MessageWrap("playerJoined", m.asJson).asJson
   }
   implicit val MessageCodec: Codec[Message] = Codec.from(MessageDecoder, MessageEncoder)
 }
