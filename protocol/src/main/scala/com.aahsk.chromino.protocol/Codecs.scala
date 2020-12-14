@@ -23,11 +23,12 @@ object Codecs {
   implicit val GameStateCodec: Codec[GameState]         = deriveCodec[GameState]
 
   // Messages
-  implicit val GameStateMessageCodec: Codec[GameStateMessage]   = deriveCodec[GameStateMessage]
-  implicit val MessageParseErrorCodec: Codec[MessageParseError] = deriveCodec[MessageParseError]
-  implicit val GameNotFoundErrorCodec: Codec[GameNotFoundError] = deriveCodec[GameNotFoundError]
-  implicit val PingCodec: Codec[Ping]                           = deriveCodec[Ping]
-  implicit val PongCodec: Codec[Pong]                           = deriveCodec[Pong]
+  implicit val GameStateMessageCodec: Codec[GameStateMessage]     = deriveCodec[GameStateMessage]
+  implicit val MessageParseErrorCodec: Codec[MessageParseError]   = deriveCodec[MessageParseError]
+  implicit val GameNotFoundErrorCodec: Codec[GameNotFoundError]   = deriveCodec[GameNotFoundError]
+  implicit val PingCodec: Codec[Ping]                             = deriveCodec[Ping]
+  implicit val PongCodec: Codec[Pong]                             = deriveCodec[Pong]
+  implicit val ConnectionMigratedCodec: Codec[ConnectionMigrated] = deriveCodec[ConnectionMigrated]
 
   // Message
   implicit val MessageWrapCodec: Codec[MessageWrap] = deriveCodec[MessageWrap]
@@ -42,14 +43,17 @@ object Codecs {
       Decoder[Ping].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap("pong", payload) =>
       Decoder[Pong].widen[Message].decodeJson(payload).leftMap(_.message)
+    case MessageWrap("connectionMigrated", payload) =>
+      Decoder[ConnectionMigrated].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap(_, _) => Left("Unknown command constant")
   }
   implicit val MessageEncoder: Encoder[Message] = Encoder.instance {
-    case m: GameStateMessage  => MessageWrap("gameStateMessage", m.asJson).asJson
-    case m: MessageParseError => MessageWrap("messageParseError", m.asJson).asJson
-    case m: GameNotFoundError => MessageWrap("gameNotFoundError", m.asJson).asJson
-    case m: Ping              => MessageWrap("ping", m.asJson).asJson
-    case m: Pong              => MessageWrap("pong", m.asJson).asJson
+    case m: GameStateMessage   => MessageWrap("gameStateMessage", m.asJson).asJson
+    case m: MessageParseError  => MessageWrap("messageParseError", m.asJson).asJson
+    case m: GameNotFoundError  => MessageWrap("gameNotFoundError", m.asJson).asJson
+    case m: Ping               => MessageWrap("ping", m.asJson).asJson
+    case m: Pong               => MessageWrap("pong", m.asJson).asJson
+    case m: ConnectionMigrated => MessageWrap("connectionMigrated", m.asJson).asJson
   }
   implicit val MessageCodec: Codec[Message] = Codec.from(MessageDecoder, MessageEncoder)
 }

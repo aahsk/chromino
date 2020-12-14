@@ -5,7 +5,7 @@ case class Game(
   board: Board,
   creatorNick: String,
   players: List[User],
-  activePlayerIndex: String,
+  activePlayerIndex: Int,
   winnerIndex: Option[Int],
   playerChrominos: Map[String, Chromino],
   maxPlayerCount: Int,

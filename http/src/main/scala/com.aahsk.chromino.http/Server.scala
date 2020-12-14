@@ -14,6 +14,8 @@ object Server {
     for {
       gameRoute <- GameRoute.create()
       _ <- BlazeServerBuilder[F](executionContext)
+        .withNio2(true)
+        .withWebSockets(true)
         .bindHttp(port = 9000, host = "localhost")
         .withHttpApp(gameRoute.orNotFound)
         .serve

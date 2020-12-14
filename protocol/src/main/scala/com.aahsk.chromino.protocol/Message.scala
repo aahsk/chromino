@@ -12,6 +12,7 @@ object Message {
   final case class GameNotFoundError()                extends Message
   final case class Ping()                             extends Message
   final case class Pong()                             extends Message
+  final case class ConnectionMigrated()               extends Message
 }
 
 @JSExportTopLevel("MessageWrap")
