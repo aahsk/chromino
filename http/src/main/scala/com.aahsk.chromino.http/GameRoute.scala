@@ -44,8 +44,7 @@ case class GameRoute[F[_]: ConcurrentEffect: Monad](
   ): (List[GameController[F]], F[Unit]) =
     controllers.find(_.game.name == gameName) match {
       case None =>
-        println("Creating game", controllers)
-        val ret = (
+        (
           controllers :+ GameController.create(
             gameName,
             expectedPlayerCount,
@@ -54,13 +53,8 @@ case class GameRoute[F[_]: ConcurrentEffect: Monad](
           ),
           Monad[F].pure(())
         )
-        println("Creating game", controllers)
-        ret
       case Some(controller) =>
-        println("Joining game", controllers)
-        val ret = (controllers, controller.joinPlayer(nick, toClient))
-        println("Joining game", controllers)
-        ret
+        (controllers, controller.joinPlayer(nick, toClient))
     }
 
   def fromClient(

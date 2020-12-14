@@ -100,5 +100,13 @@ case object Chromino extends IntEnum[Chromino] with IntCirceEnum[Chromino] {
   case object RegularGYG extends Chromino(78, G, Y, G)
   case object RegularGGG extends Chromino(79, G, G, G)
 
-  val values = findValues
+  val values: IndexedSeq[Chromino] = findValues
+  val wildcards: List[Chromino] = List(
+    WildcardBXG,
+    WildcardBXY,
+    WildcardGXR,
+    WildcardRXP,
+    WildcardYXP
+  )
+  val regulars: List[Chromino] = values.toList.filterNot(wildcards.contains(_))
 }

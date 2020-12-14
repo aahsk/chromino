@@ -11,8 +11,11 @@ server/client.
 - Scala.js & Circe [(see protocol)](src/main/scala/com.aahsk.chromino.protocol)
 
 # Usage
-- `cd .` => `sbt run` - Starts a server on http://localhost:9000/ (not configurable for MVP)  
-- `cd frontend` => `npm run dev` - Starts a development server on http://localhost:3000/ (not configurable for MVP)  
+- `./scala-compile.sh` - Compiles Scala & Scala.JS code    
+- `./scala-tidy.sh` - Runs `scalafix` and `scalafmt` 
+- `./scala-transfer.sh` - Copies compiled Scala.JS code into `./frontend/src/scala` 
+- `sbt boot/run` - Starts a server on http://localhost:9000/ (not configurable for MVP)  
+- `cd ./frontend; npm run start` - Starts a development server on http://localhost:3000/ (not configurable for MVP)  
 
 # To do list
 A checked box means the feature has been at least started.   

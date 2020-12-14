@@ -1,10 +1,11 @@
 package com.aahsk.chromino.logic
 
+import scala.util.Random
 import cats.implicits._
 import cats.Monad
 import cats.effect.Sync
 import fs2.concurrent.Queue
-import com.aahsk.chromino.domain.{Board, Chromino, Game, User}
+import com.aahsk.chromino.domain.{Board, BoardChromino, Chromino, Game, Position, Rotation, User}
 import com.aahsk.chromino.protocol.{GameState, Message}
 import com.aahsk.chromino.protocol.Message.{
   ConnectionMigrated,
@@ -33,12 +34,13 @@ class GameController[F[_]: Sync](
 
     // Add user to game
     game.players.find(_.nick == nick) match {
-      case None => game = game.copy(players = game.players :+ user)
+      case None    => game = game.copy(players = game.players :+ user)
+      case Some(_) => ()
     }
 
     // If appropriate, start game
     if (game.players.length == game.expectedPlayerCount) {
-      game = game.copy(waitingPlayers = false)
+      startGame()
     }
 
     // Store old connection if exists
@@ -64,6 +66,29 @@ class GameController[F[_]: Sync](
           broadcastToNick[GameStateMessage](nick => GameStateMessage(GameState.of(game, nick)))
         }
     } yield ()
+  }
+
+  def startGame(): Unit = {
+    val initChromino = Random
+      .shuffle(Chromino.wildcards)
+      .head
+    val initRotation = Random
+      .shuffle(Rotation.values)
+      .head
+    val postInitBag = game.board.bag.filter(_ == initChromino)
+    val initBoardChromino = BoardChromino(
+      initChromino,
+      Position(0, 0),
+      initRotation
+    )
+
+    game = game.copy(
+      waitingPlayers = false,
+      board = game.board.copy(
+        bag = postInitBag,
+        pieces = List(initBoardChromino)
+      )
+    )
   }
 }
 

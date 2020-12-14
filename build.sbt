@@ -4,7 +4,7 @@ ThisBuild / organization := "com.aahsk.chromino"
 ThisBuild / scalaVersion := "2.13.4"
 
 lazy val commonSettings = Seq(
-//  scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+ scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
   libraryDependencies ++= Seq(
     "org.scalatest" %%% "scalatest" % scalaTestVersion % "test"
   ),
