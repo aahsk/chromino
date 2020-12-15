@@ -14,7 +14,7 @@ function Game() {
   const [gameState, setGameState] = useState<GameState|null>(null);
   const [activeChrominoIndex, setActiveChrominoIndex] = useState<number|null>(null);
   const [chrominoP, setChrominoP] = useState<Position>({ x: 0, y: 0});
-  const [chrominoR, setChrominoR] = useState<Rotation>({});
+  const [chrominoR, setChrominoR] = useState<Rotation>({ N: {}});
 
   const socket = new ChrominoSocket({
     setSocketActive,
@@ -39,13 +39,14 @@ function Game() {
     <div className="app">
       <div className="app-header">
         <h4>
-          Chromino [{gameName}] :: {gameState?.waitingPlayers ? "waiting for players" : (gameState?.winnerIndex != null ? `'${gameState?.players[gameState?.winnerIndex].nick}' won this game` : "game is in session")}
+          Chromino [{gameName}] :: {!socketActive ? "broken connection" : gameState?.waitingPlayers ? "waiting for players" : (gameState?.winnerIndex != null ? `'${gameState?.players[gameState?.winnerIndex].nick}' won this game` : "game is in session")}
         </h4>
       </div>
       <div className="app-wrapper with-header">
         <div className="app-content with-header">
-          {gameState?.waitingPlayers && "waiting for more players"}
-          {!gameState?.waitingPlayers && "game active"}
+          {!socketActive && "broken connection"}
+          {socketActive && gameState?.waitingPlayers && "waiting for more players"}
+          {socketActive && !gameState?.waitingPlayers && "game active"}
         </div>
         <div className="app-sidebar with-header">
           <h4>Info</h4>

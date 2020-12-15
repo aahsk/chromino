@@ -1,14 +1,16 @@
 package com.aahsk.chromino.domain
 
+import enumeratum.{CirceEnum, Enum, EnumEntry}
 import scala.scalajs.js.annotation._
+import enumeratum._
 
 @JSExportTopLevel("Position")
 case class Position(x: Int, y: Int)
 
-sealed trait Rotation
+sealed trait Rotation extends EnumEntry
 
 @JSExportTopLevel("Rotation")
-object Rotation {
+case object Rotation extends Enum[Rotation] with CirceEnum[Rotation] {
   // Encoded as points of compass
   // - [N] North is "default" and means the chromino looks like [ Red, Blue, Purple, ]
   // - [W] West means the chromino looks like
@@ -30,10 +32,19 @@ object Rotation {
   final case object S extends Rotation
   final case object E extends Rotation
 
-  val values = List(
-    N,
-    W,
-    S,
-    E
-  )
+  val values = findValues
+
+  def clockwise(r: Rotation): Rotation = r match {
+    case N => E
+    case W => N
+    case S => W
+    case E => S
+  }
+
+  def antiClockwise(r: Rotation): Rotation = r match {
+    case N => W
+    case W => S
+    case S => E
+    case E => N
+  }
 }

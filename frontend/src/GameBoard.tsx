@@ -6,6 +6,7 @@ export interface GameBoardProps {
 }
 
 function GameBoard(props: GameBoardProps) {
+  console.log(props.gameState)
   return (
     <div className="game-board">
 

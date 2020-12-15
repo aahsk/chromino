@@ -1,6 +1,6 @@
-import { Frontend } from './scala/protocol-fastopt';
 import * as H from 'history';
-import { User, GameState } from './Domain';
+import { GameState } from './Domain';
+import { ScalaWrapper } from './ScalaWrapper';
 
 export interface ChrominoSocketConfig {
     setSocketActive: React.Dispatch<React.SetStateAction<boolean>>
@@ -81,11 +81,11 @@ export class ChrominoSocket {
         // Init message handler
         this.socket.onmessage = (evt: Event): any => {
             const serialized = ("data" in evt) ? evt["data"] : "";
-            if (!Frontend.isValid(serialized)) {
+            const json = ScalaWrapper.parseMessage(serialized)
+            if (!json) {
                 this.config.setSocketError("Received invalid message"); return
             }
 
-            const json = JSON.parse(serialized)
             const command = ("command" in json) ? json["command"] : null;
             const payload = ("payload" in json) ? json["payload"] : null;
 
