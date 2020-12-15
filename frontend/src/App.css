@@ -46,12 +46,24 @@
 
 .app-sidebar {
   padding: 20px;
-  min-width: 450px;
+  width: 450px;
   display: flex;
   flex-direction: column;
   text-align: left;
   min-height: 100vh;
-  font-size: calc(10px + 1.5vmin);
+}
+
+.app-sidebar p, .app-sidebar span {
+  font-size: calc(10px + 0.5vmin);
+}
+
+.app-sidebar h4, .app-sidebar h6, .app-sidebar p, .app-sidebar span {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.app-sidebar hr {
+  width: 100%;
 }
 
 .app-sidebar.with-header {

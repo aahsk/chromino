@@ -5,7 +5,7 @@ import cats.{Applicative, Monad}
 import cats.effect.{ConcurrentEffect, Sync}
 import cats.effect.concurrent.Ref
 import com.aahsk.chromino.logic.GameController
-import com.aahsk.chromino.protocol.Message
+import com.aahsk.chromino.protocol.{GameState, Message}
 import com.aahsk.chromino.protocol.Message._
 import fs2.Pipe
 import fs2.Stream
@@ -44,17 +44,22 @@ case class GameRoute[F[_]: ConcurrentEffect: Monad](
   ): (List[GameController[F]], F[Unit]) =
     controllers.find(_.game.name == gameName) match {
       case None =>
+        val controller = GameController.create(
+          gameName,
+          expectedPlayerCount,
+          nick,
+          toClient
+        )
         (
-          controllers :+ GameController.create(
-            gameName,
-            expectedPlayerCount,
-            nick,
-            toClient
-          ),
-          Monad[F].pure(())
+          controllers :+ controller,
+          toClient.enqueue1(GameStateMessage(GameState.of(controller.game, nick)))
         )
       case Some(controller) =>
-        (controllers, controller.joinPlayer(nick, toClient))
+        (
+          controllers,
+          controller.joinPlayer(nick, toClient) *>
+            toClient.enqueue1(GameStateMessage(GameState.of(controller.game, nick)))
+        )
     }
 
   def fromClient(

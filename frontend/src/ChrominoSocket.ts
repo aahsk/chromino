@@ -1,13 +1,14 @@
-import * as Domain from './scala/domain-fastopt';
-import * as Protocol from './scala/protocol-fastopt';
+import { Frontend } from './scala/protocol-fastopt';
 import * as H from 'history';
-
-console.log(Domain, Protocol)
+import { User, GameState } from './Domain';
 
 export interface ChrominoSocketConfig {
     setSocketActive: React.Dispatch<React.SetStateAction<boolean>>
     setSocketError: React.Dispatch<React.SetStateAction<string|null>>
     host: string|null
+
+    gameState: GameState|null
+    setGameState: React.Dispatch<React.SetStateAction<GameState|null>>
 }
 
 export const envWebSocketHost = (): string | null => {
@@ -43,18 +44,14 @@ export class ChrominoSocket {
         this.config = socketConfig
     }
 
-    stop() {
-        console.log("stopping socket")
+    stop(errorMessage: string = "") {
+        console.log(`stopping socket w/ reason: ${errorMessage}`)
         if (!this.socket) return;
 
-        try {
-            this.socket.close();
-            this.socket = null;
-            this.config.setSocketActive(false)
-            this.config.setSocketError(null)
-        } catch (e) {
-            this.config.setSocketError(e.getMessage())
-        }
+        this.socket.close();
+        this.socket = null;
+        this.config.setSocketActive(false)
+        this.config.setSocketError(errorMessage)
     }
 
     start(gameName: string | null, nick: string | null, playerCount: number | null) {
@@ -70,15 +67,71 @@ export class ChrominoSocket {
         if (!playerCount) { this.config.setSocketError("Player count not set"); return }
 
         // Init socket
-        try {
-            const url = buildGameUrl(this.config.host, gameName, nick, playerCount)
-            this.socket = new WebSocket(url.toString());
-            this.config.setSocketActive(true)
-            this.config.setSocketError(null)
-        } catch (e) {
-            this.socket = null
-            this.config.setSocketActive(false)
-            this.config.setSocketError(e.getMessage())
+        const url = buildGameUrl(this.config.host, gameName, nick, playerCount)
+        this.socket = new WebSocket(url.toString())
+        this.config.setSocketActive(true)
+        this.config.setSocketError(null)
+        
+        // Init error handler
+        this.socket.onerror = (evt: Event): any => {
+            console.log("websocket encountered error", evt)
+            this.stop("Websocket encountered error")
         }
+
+        // Init message handler
+        this.socket.onmessage = (evt: Event): any => {
+            const serialized = ("data" in evt) ? evt["data"] : "";
+            if (!Frontend.isValid(serialized)) {
+                this.config.setSocketError("Received invalid message"); return
+            }
+
+            const json = JSON.parse(serialized)
+            const command = ("command" in json) ? json["command"] : null;
+            const payload = ("payload" in json) ? json["payload"] : null;
+
+            this.processCommand(command, payload)
+        }
+    }
+
+    processCommand(command: string, payload: any) {
+        switch (command) {
+            case ("playerJoined"):
+                this.playerJoined(payload)
+                break;
+            case ("gameStateMessage"):
+                this.gameStateMessage(payload)
+                break;
+            case ("connectionMigrated"):
+                this.connectionMigrated(payload)
+                break;
+            default:
+                console.log(`received unknown message ${command}`)
+                break;
+        }
+    }
+
+    playerJoined(payload: any) {
+        if (this.config.gameState == null) {
+            console.log("players joined, but game isn't defined")
+            return
+        } else {
+            console.log("players joined")
+        }
+
+        const players = ("players" in payload) ? payload["players"] : [];
+        this.config.setGameState({
+            ...this.config.gameState,
+            players
+        })
+    }
+
+    gameStateMessage(payload: any) {
+        console.log("game state changed")
+        const state = ("state" in payload) ? payload["state"] : [];
+        this.config.setGameState(state)
+    }
+
+    connectionMigrated(payload: any) {
+        this.stop("This nickname has a new connection")
     }
 }

@@ -57,7 +57,7 @@ class GameController[F[_]: Sync](
         case None           => Monad[F].pure(())
       }
       // Broadcast player joined
-      _ <- broadcastToNick[PlayerJoined](_ => PlayerJoined(user))
+      _ <- broadcastToNick[PlayerJoined](_ => PlayerJoined(game.players))
       // If game started, broadcast its state
       _ <-
         if (game.waitingPlayers) {

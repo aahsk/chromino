@@ -3,12 +3,13 @@ package com.aahsk.chromino.protocol
 import com.aahsk.chromino.domain.{BoardChromino, Chromino, ChrominoColor, Position, Rotation, User}
 import io.circe.generic.semiauto.deriveCodec
 import io.circe.{Codec, Decoder, Encoder}
+import io.circe.parser._
 import io.circe.syntax._
 import cats.implicits._
+import io.circe
 
 import scala.scalajs.js.annotation._
 
-@JSExportTopLevel("Codecs")
 object Codecs {
   import Message._
 
@@ -59,4 +60,9 @@ object Codecs {
     case m: PlayerJoined       => MessageWrap("playerJoined", m.asJson).asJson
   }
   implicit val MessageCodec: Codec[Message] = Codec.from(MessageDecoder, MessageEncoder)
+
+  object JSParseHelper {
+    @JSExportTopLevel("parseMessage")
+    def parseMessage(text: String): Either[circe.Error, Message] = decode[Message](text)
+  }
 }
