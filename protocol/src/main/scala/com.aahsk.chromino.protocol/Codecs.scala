@@ -39,6 +39,7 @@ object Codecs {
   implicit val PongCodec: Codec[Pong]                             = deriveCodec[Pong]
   implicit val ConnectionMigratedCodec: Codec[ConnectionMigrated] = deriveCodec[ConnectionMigrated]
   implicit val PlayerJoinedCodec: Codec[PlayerJoined]             = deriveCodec[PlayerJoined]
+  implicit val SubmitMoveCodec: Codec[SubmitMove]                 = deriveCodec[SubmitMove]
 
   // Message
   implicit val MessageWrapCodec: Codec[MessageWrap] = deriveCodec[MessageWrap]
@@ -57,6 +58,8 @@ object Codecs {
       Decoder[ConnectionMigrated].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap("playerJoined", payload) =>
       Decoder[PlayerJoined].widen[Message].decodeJson(payload).leftMap(_.message)
+    case MessageWrap("submitMove", payload) =>
+      Decoder[PlayerJoined].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap(_, _) => Left("Unknown command constant")
   }
   implicit val MessageEncoder: Encoder[Message] = Encoder.instance {
@@ -67,6 +70,7 @@ object Codecs {
     case m: Pong               => MessageWrap("pong", m.asJson).asJson
     case m: ConnectionMigrated => MessageWrap("connectionMigrated", m.asJson).asJson
     case m: PlayerJoined       => MessageWrap("playerJoined", m.asJson).asJson
+    case m: SubmitMove         => MessageWrap("submitMove", m.asJson).asJson
   }
   implicit val MessageCodec: Codec[Message] = Codec.from(MessageDecoder, MessageEncoder)
 

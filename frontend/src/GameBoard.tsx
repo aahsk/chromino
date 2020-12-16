@@ -10,6 +10,9 @@ export interface GameBoardProps {
   setChrominoR: React.Dispatch<React.SetStateAction<Rotation>>
   activeChrominoIndex: number|null
   setActiveChrominoIndex: React.Dispatch<React.SetStateAction<number|null>>
+
+  submitMove: () => void
+
   gameState: GameState
 }
 
@@ -23,7 +26,7 @@ function GameBoard(props: GameBoardProps) {
   }
 
   const computeStyle = (s: ChrominoSquare, isStatic: boolean): Record<string, any> => {
-    const offsetX = isStatic ? 0 : -props.chrominoP.x
+    const offsetX = isStatic ? 0 : props.chrominoP.x
     const offsetY = isStatic ? 0 : props.chrominoP.y
     
     return {
@@ -45,7 +48,6 @@ function GameBoard(props: GameBoardProps) {
   }
 
   const handlePress = (evt: KeyboardEvent<HTMLDivElement>) => {
-    console.log(evt)
     if (evt.key === "ArrowUp") props.setChrominoP({
       x: props.chrominoP.x,
       y: props.chrominoP.y + 1
@@ -55,11 +57,11 @@ function GameBoard(props: GameBoardProps) {
       y: props.chrominoP.y - 1
     })
     if (evt.key === "ArrowLeft") props.setChrominoP({
-      x: props.chrominoP.x - 1,
+      x: props.chrominoP.x + 1,
       y: props.chrominoP.y
     })
     if (evt.key === "ArrowRight") props.setChrominoP({
-      x: props.chrominoP.x + 1,
+      x: props.chrominoP.x - 1,
       y: props.chrominoP.y
     })
     const prevIndex = Math.max(0, (props.activeChrominoIndex || 0) - 1)
@@ -68,6 +70,7 @@ function GameBoard(props: GameBoardProps) {
     if (evt.key === "w") props.setChrominoR(ScalaWrapper.rotateClockwise(ScalaWrapper.toScala(props.chrominoR)))
     if (evt.key === "e") props.setChrominoR(ScalaWrapper.rotateAntiClockwise(ScalaWrapper.toScala(props.chrominoR)))
     if (evt.key === "r") props.setActiveChrominoIndex(nextIndex)
+    if (evt.key === "f") props.submitMove()
   }
 
   const placedSquares: Array<ChrominoSquare> = props.gameState.board.pieces.flatMap((boardChromino) => {
@@ -94,7 +97,6 @@ function GameBoard(props: GameBoardProps) {
       })
   })()
 
-  console.log(placedSquares, floatingSquares, props.chrominoP, props.chrominoR)
   return (
     <div className="game-board-wrap" onKeyDown={handlePress} tabIndex={0}>
       <div className="game-board">

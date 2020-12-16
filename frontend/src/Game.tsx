@@ -9,6 +9,7 @@ import { ScalaWrapper } from './ScalaWrapper';
 
 function Game() {
   const location = useLocation();
+  const [socket, setSocket] = useState<ChrominoSocket|null>(null);
   const [socketActive, setSocketActive] = useState<boolean>(false);
   const [socketError, setSocketError] = useState<string|null>(null);
   const [initialized, setInitialized] = useState<boolean>(false);
@@ -18,25 +19,32 @@ function Game() {
   const [chrominoP, setChrominoP] = useState<Position>({ x: 0, y: 0});
   const [chrominoR, setChrominoR] = useState<Rotation>(ScalaWrapper.N);
 
-  const socket = new ChrominoSocket({
-    setSocketActive,
-    setSocketError,
-    host: envWebSocketHost(),
-    
-    gameState,
-    setGameState,
-
-    activeChrominoIndex,
-    setActiveChrominoIndex
-  })
-
   const gameName = urlGameName(location)
   const selfNick = urlNick(location)
   const playerCount = urlPlayerCount(location)
   useEffect(() => {
+    const socketProps = {
+      setSocketActive,
+      setSocketError,
+      host: envWebSocketHost(),
+      
+      gameState,
+      setGameState,
+  
+      chrominoP,
+      chrominoR,
+  
+      activeChrominoIndex,
+      setActiveChrominoIndex
+    };
+
     if (!initialized) {
+      const socket = new ChrominoSocket(socketProps)
+      setSocket(socket);
       socket.start(gameName, selfNick, playerCount);
       setInitialized(true);
+    } else if (!!socket) {
+      socket.config = socketProps
     }
   });
 
@@ -50,9 +58,9 @@ function Game() {
       </div>
       <div className="app-wrapper with-header">
         <div className="app-content with-header with-stretch">
-          {!socketActive && "broken connection"}
-          {socketActive && gameState?.waitingPlayers && "waiting for more players"}
-          {socketActive && gameState && !gameState.waitingPlayers && (
+          {(!socket || !socketActive) && "broken connection"}
+          {socket && socketActive && gameState?.waitingPlayers && "waiting for more players"}
+          {socket && socketActive && gameState && !gameState.waitingPlayers && (
             <GameBoard
               chrominoP={chrominoP}
               setChrominoP={setChrominoP}
@@ -60,6 +68,9 @@ function Game() {
               setChrominoR={setChrominoR}
               activeChrominoIndex={activeChrominoIndex}
               setActiveChrominoIndex={setActiveChrominoIndex}
+
+              submitMove={socket.submitMove.bind(socket)}
+
               gameState={gameState as GameState}
             ></GameBoard>
           )}

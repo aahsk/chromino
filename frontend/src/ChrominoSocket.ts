@@ -1,5 +1,5 @@
 import * as H from 'history';
-import { GameState } from './Domain';
+import { GameState, Position, Rotation, BoardChromino } from './Domain';
 import { ScalaWrapper } from './ScalaWrapper';
 
 export interface ChrominoSocketConfig {
@@ -9,6 +9,9 @@ export interface ChrominoSocketConfig {
 
     gameState: GameState|null
     setGameState: React.Dispatch<React.SetStateAction<GameState|null>>
+
+    chrominoP: Position
+    chrominoR: Rotation
 
     activeChrominoIndex: number|null
     setActiveChrominoIndex: React.Dispatch<React.SetStateAction<number|null>>
@@ -44,7 +47,9 @@ export class ChrominoSocket {
     config: ChrominoSocketConfig
     socket: WebSocket | null = null
     constructor(socketConfig: ChrominoSocketConfig) {
+        console.log("init")
         this.config = socketConfig
+        this.submitMove.bind(this)
     }
 
     stop(errorMessage: string = "") {
@@ -119,6 +124,29 @@ export class ChrominoSocket {
             this.config.setActiveChrominoIndex((availableChrominos - 1))
             return
         }
+    }
+
+    submitMove() {
+        if (!this.socket) return;
+        if (this.config.activeChrominoIndex == null) return;
+        const chromino = this.config.gameState?.requesterChrominos[this.config.activeChrominoIndex]
+        if (!chromino) return;
+
+        const boardChromino: BoardChromino = {
+            centerPosition: this.config.chrominoP,
+            centerRotation: this.config.chrominoR,
+            chromino
+        }
+
+        const message = {
+            command: "submitMove",
+            payload: {
+                boardChromino
+            }
+        }
+
+        console.log("submit", message)
+        this.socket.send(JSON.stringify(message))
     }
 
     processCommand(command: string, payload: any) {
