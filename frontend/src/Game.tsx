@@ -5,6 +5,7 @@ import {
 import { ChrominoSocket, envWebSocketHost, urlNick, urlGameName, urlPlayerCount } from './ChrominoSocket';
 import { GameState, Rotation, Position } from './Domain';
 import GameBoard from './GameBoard';
+import { ScalaWrapper } from './ScalaWrapper';
 
 function Game() {
   const location = useLocation();
@@ -15,7 +16,7 @@ function Game() {
   const [gameState, setGameState] = useState<GameState|null>(null);
   const [activeChrominoIndex, setActiveChrominoIndex] = useState<number|null>(null);
   const [chrominoP, setChrominoP] = useState<Position>({ x: 0, y: 0});
-  const [chrominoR, setChrominoR] = useState<Rotation>({ N: {}});
+  const [chrominoR, setChrominoR] = useState<Rotation>(ScalaWrapper.N);
 
   const socket = new ChrominoSocket({
     setSocketActive,
@@ -23,7 +24,10 @@ function Game() {
     host: envWebSocketHost(),
     
     gameState,
-    setGameState
+    setGameState,
+
+    activeChrominoIndex,
+    setActiveChrominoIndex
   })
 
   const gameName = urlGameName(location)
@@ -36,11 +40,12 @@ function Game() {
     }
   });
 
+  const isSelfTurn = (gameState?.players[gameState?.activePlayerIndex]?.nick === selfNick)
   return (
-    <div className="app">
+    <div className={`app ${isSelfTurn ? "self-turn" : "other-turn"}`}>
       <div className="app-header">
         <h4>
-          Chromino [{gameName}] :: {!socketActive ? "broken connection" : gameState?.waitingPlayers ? "waiting for players" : (gameState?.winnerIndex != null ? `'${gameState?.players[gameState?.winnerIndex].nick}' won this game` : "game is in session")}
+          Chromino [{gameName}] :: {!socketActive ? "broken connection" : gameState?.waitingPlayers ? "waiting for players" : (gameState?.winnerIndex != null ? `'${gameState?.players[gameState?.winnerIndex].nick}' won this game` : `game is in session ${isSelfTurn ? "(your turn)" : `('${gameState?.players[gameState?.activePlayerIndex]?.nick}' turn)`}`)}
         </h4>
       </div>
       <div className="app-wrapper with-header">
@@ -69,15 +74,19 @@ function Game() {
           <hr></hr>
           <div>
             <h6>Players [{gameState?.players?.length || "?"}/{gameState?.expectedPlayerCount || "?"}]</h6>
-            {(gameState?.players || []).map((player, index) =>
-              <p key={index}>[{index + 1}]: {player.nick}{player.nick == selfNick ? "(self)" : ""}</p>
-            )}
+            {(gameState?.players || []).map((player, index) => {
+              const isSelf = player.nick == selfNick
+              const hasTurn = player.nick == gameState?.players[gameState?.activePlayerIndex]?.nick
+              return (
+                <p key={index} className={`player ${isSelf ? "self" : ""}`}>[{index + 1}]: {player.nick} {isSelf ? "(self)" : ""} {hasTurn ? " (turn)" : ""}</p>
+              );
+            })}
           </div>
           <hr></hr>
           <div>
             <h6>Chrominos in hand</h6>
             {(gameState?.requesterChrominos || []).map((chromino, index) =>
-              <p key={index}>[{index + 1}]: {Object.keys(chromino)[0]}{index == activeChrominoIndex ? "(active)" : ""}</p>
+              <p key={index}>[{index + 1}]: {Object.keys(chromino)[0]} {index == activeChrominoIndex ? "(active)" : ""}</p>
             )}
             {(gameState?.requesterChrominos || []).length == 0 && <p>You have no chrominos at hand</p>}
           </div>

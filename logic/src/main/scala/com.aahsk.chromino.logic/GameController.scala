@@ -14,6 +14,9 @@ import com.aahsk.chromino.protocol.Message.{
   Pong
 }
 
+/** Author's note: This could probably be made functional by not using an effectful
+  *  queue, but rather by using to-be-sent-out messages in method returns
+  */
 class GameController[F[_]: Sync](
   var game: Game,
   var toPlayers: Map[String, Queue[F, Message]]
@@ -29,29 +32,14 @@ class GameController[F[_]: Sync](
   }
 
   def joinPlayer(nick: String, toNick: Queue[F, Message]): F[Unit] = {
-    // Construct user
-    val user = User(nick)
-
-    // Add user to game
-    if (game.waitingPlayers) {
-      game.players.find(_.nick == nick) match {
-        case None    => game = game.copy(players = game.players :+ user)
-        case Some(_) => ()
-      }
-    }
-
-    // If appropriate, start game
-    if (game.waitingPlayers) {
-      if (game.players.length == game.expectedPlayerCount) {
-        startGame()
-      }
-    }
+    // Process logical changes
+    game = GameLogic.joinPlayer(game, nick)
 
     // Store old connection if exists
-    val oldConnection = toPlayers.get(user.nick)
+    val oldConnection = toPlayers.get(nick)
 
     // Configure new connection
-    toPlayers = toPlayers.updated(user.nick, toNick)
+    toPlayers = toPlayers.updated(nick, toNick)
 
     // Induce effects on world
     for {
@@ -72,27 +60,9 @@ class GameController[F[_]: Sync](
     } yield ()
   }
 
-  def startGame(): Unit = {
-    val initChromino = Random
-      .shuffle(Chromino.wildcards)
-      .head
-    val initRotation = Random
-      .shuffle(Rotation.values)
-      .head
-    val postInitBag = game.board.bag.filter(_ == initChromino)
-    val initBoardChromino = BoardChromino(
-      initChromino,
-      Position(0, 0),
-      initRotation
-    )
-
-    game = game.copy(
-      waitingPlayers = false,
-      board = game.board.copy(
-        bag = postInitBag,
-        pieces = List(initBoardChromino)
-      )
-    )
+  def disconnectPlayer(nick: String): F[Unit] = {
+    toPlayers = toPlayers.removed(nick)
+    Monad[F].pure()
   }
 }
 
@@ -103,17 +73,7 @@ object GameController {
     creatorNick: String,
     toCreator: Queue[F, Message]
   ): GameController[F] = {
-    val game = Game(
-      name = gameName,
-      board = Board.empty(),
-      creatorNick = creatorNick,
-      players = List(User(creatorNick)),
-      activePlayerIndex = 0,
-      winnerIndex = None,
-      playerChrominos = Map[String, List[Chromino]](),
-      expectedPlayerCount = expectedPlayerCount,
-      waitingPlayers = true
-    )
+    val game = GameLogic.createGame(gameName, creatorNick, expectedPlayerCount)
     val toPlayers = Map[String, Queue[F, Message]](
       creatorNick -> toCreator
     )

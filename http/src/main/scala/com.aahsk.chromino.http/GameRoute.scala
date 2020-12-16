@@ -18,6 +18,7 @@ import com.aahsk.chromino.protocol.Codecs._
 import io.circe.Error
 import io.circe.parser._
 import io.circe.syntax._
+import org.http4s.websocket.WebSocketFrame.Close
 
 case class GameRoute[F[_]: ConcurrentEffect: Monad](
   gameControllers: Ref[F, List[GameController[F]]]
@@ -62,19 +63,35 @@ case class GameRoute[F[_]: ConcurrentEffect: Monad](
         )
     }
 
+  def disconnectGame(
+    gameName: String,
+    nick: String,
+    controllers: List[GameController[F]]
+  ): (List[GameController[F]], F[Unit]) =
+    controllers.find(_.game.name == gameName) match {
+      case None => (controllers, Monad[F].pure(()))
+      case Some(controller) =>
+        (controllers, controller.disconnectPlayer(nick))
+    }
+
   def fromClient(
     clientOutQueue: Queue[F, Message],
     gameName: String,
     nick: String
   ): Pipe[F, WebSocketFrame, Unit] =
-    _.evalMap { case WebSocketFrame.Text(text, _) =>
-      for {
-        maybeMessage <- Monad[F].pure(decode[Message](text))
-        result <- gameControllers
-          .modify(controllers => processMessage(gameName, nick, maybeMessage, controllers))
+    _.evalMap {
+      case WebSocketFrame.Text(text, _) =>
+        for {
+          maybeMessage <- Monad[F].pure(decode[Message](text))
+          result <- gameControllers
+            .modify(controllers => processMessage(gameName, nick, maybeMessage, controllers))
+            .flatten
+          _ <- clientOutQueue.enqueue1(result)
+        } yield ()
+      case Close(_) =>
+        gameControllers
+          .modify(controllers => disconnectGame(gameName, nick, controllers))
           .flatten
-        _ <- clientOutQueue.enqueue1(result)
-      } yield ()
     }
 
   def toClient(clientOutQueue: Queue[F, Message]): Stream[F, WebSocketFrame] =

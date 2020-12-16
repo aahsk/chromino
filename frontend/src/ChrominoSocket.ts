@@ -9,6 +9,9 @@ export interface ChrominoSocketConfig {
 
     gameState: GameState|null
     setGameState: React.Dispatch<React.SetStateAction<GameState|null>>
+
+    activeChrominoIndex: number|null
+    setActiveChrominoIndex: React.Dispatch<React.SetStateAction<number|null>>
 }
 
 export const envWebSocketHost = (): string | null => {
@@ -93,6 +96,31 @@ export class ChrominoSocket {
         }
     }
 
+    resetActiveChrominoIndex(newState: GameState|null) {
+        const availableChrominos = newState?.requesterChrominos.length || this.config.gameState?.requesterChrominos.length || 0
+        const activeIndex = this.config.activeChrominoIndex
+
+        // Turn off active index if there are no chrominos
+        if (availableChrominos === 0) {
+            this.config.setActiveChrominoIndex(null)
+            return
+        }
+
+        // Set activeIndex if its not set and there are chrominos
+        if (activeIndex === null) {
+            if (availableChrominos > 0) {
+                this.config.setActiveChrominoIndex(0)
+            }
+            return
+        }
+
+        // Bump down activeIndex if its on 
+        if (activeIndex > (availableChrominos - 1)) {
+            this.config.setActiveChrominoIndex((availableChrominos - 1))
+            return
+        }
+    }
+
     processCommand(command: string, payload: any) {
         switch (command) {
             case ("playerJoined"):
@@ -128,6 +156,7 @@ export class ChrominoSocket {
     gameStateMessage(payload: any) {
         console.log("game state changed")
         const state = ("state" in payload) ? payload["state"] : [];
+        this.resetActiveChrominoIndex(state)
         this.config.setGameState(state)
     }
 

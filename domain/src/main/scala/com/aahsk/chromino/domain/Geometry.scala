@@ -6,6 +6,15 @@ import enumeratum._
 
 @JSExportTopLevel("Position")
 case class Position(x: Int, y: Int)
+//  Position is imagined with the following axis
+//
+//          ^ y
+//          |
+//          |
+//  ----------------> x
+//          |
+//          |
+//          |
 
 sealed trait Rotation extends EnumEntry {
   import Rotation._
@@ -28,7 +37,7 @@ sealed trait Rotation extends EnumEntry {
 @JSExportTopLevel("Rotation")
 case object Rotation extends Enum[Rotation] with CirceEnum[Rotation] {
   // Encoded as points of compass
-  // - [N] North is "default" and means the chromino looks like [ Red, Blue, Purple, ]
+  // - [N] North is "default" and means an RBP chromino looks like [ Red, Blue, Purple, ]
   // - [W] West means the chromino looks like
   //    [
   //    Purple,
