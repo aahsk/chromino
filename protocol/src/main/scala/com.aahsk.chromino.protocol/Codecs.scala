@@ -1,6 +1,14 @@
 package com.aahsk.chromino.protocol
 
-import com.aahsk.chromino.domain.{BoardChromino, Chromino, ChrominoColor, Position, Rotation, User}
+import com.aahsk.chromino.domain.{
+  BoardChromino,
+  Chromino,
+  ChrominoColor,
+  ChrominoSquare,
+  Position,
+  Rotation,
+  User
+}
 import io.circe.generic.semiauto.deriveCodec
 import io.circe.{Codec, Decoder, Encoder}
 import io.circe.parser._
@@ -13,14 +21,15 @@ import scala.scalajs.js.annotation._
 object Codecs {
   import Message._
 
-  implicit val UserCodec: Codec[User]                   = deriveCodec[User]
-  implicit val ChrominoColorCodec: Codec[ChrominoColor] = deriveCodec[ChrominoColor]
-  implicit val ChrominoCodec: Codec[Chromino]           = deriveCodec[Chromino]
-  implicit val PositionCodec: Codec[Position]           = deriveCodec[Position]
-  implicit val RotationCodec: Codec[Rotation]           = deriveCodec[Rotation]
-  implicit val BoardChrominoCodec: Codec[BoardChromino] = deriveCodec[BoardChromino]
-  implicit val BoardStateCodec: Codec[BoardState]       = deriveCodec[BoardState]
-  implicit val GameStateCodec: Codec[GameState]         = deriveCodec[GameState]
+  implicit val UserCodec: Codec[User]                     = deriveCodec[User]
+  implicit val ChrominoColorCodec: Codec[ChrominoColor]   = deriveCodec[ChrominoColor]
+  implicit val ChrominoCodec: Codec[Chromino]             = deriveCodec[Chromino]
+  implicit val PositionCodec: Codec[Position]             = deriveCodec[Position]
+  implicit val RotationCodec: Codec[Rotation]             = deriveCodec[Rotation]
+  implicit val BoardChrominoCodec: Codec[BoardChromino]   = deriveCodec[BoardChromino]
+  implicit val ChrominoSquareCodec: Codec[ChrominoSquare] = deriveCodec[ChrominoSquare]
+  implicit val BoardStateCodec: Codec[BoardState]         = deriveCodec[BoardState]
+  implicit val GameStateCodec: Codec[GameState]           = deriveCodec[GameState]
 
   // Messages
   implicit val GameStateMessageCodec: Codec[GameStateMessage]     = deriveCodec[GameStateMessage]

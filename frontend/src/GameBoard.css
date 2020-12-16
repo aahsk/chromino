@@ -1,0 +1,66 @@
+.game-board-wrap {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+}
+
+.game-board-wrap:focus {
+  border: 0;
+  outline: 0;
+}
+
+.game-board {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+
+.square {
+  position: absolute;
+}
+
+.square-center-x {
+  z-index: 0;
+  width: 99999px !important;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.02)
+}
+
+.square-center-y {
+  z-index: 0;
+  height: 99999px !important;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.02)
+}
+
+.square-placed {
+  z-index: 1;
+}
+
+.color-r {
+  background: red;
+}
+
+.color-b {
+  background: blue;
+}
+
+.color-p {
+  background: magenta;
+}
+
+.color-y {
+  background: yellow;
+}
+
+.color-g {
+  background: green;
+}
+
+.color-x {
+  background: white;
+}

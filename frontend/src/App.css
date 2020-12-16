@@ -30,6 +30,11 @@
   min-height: calc(100vh - 150px);
 }
 
+.app-wrapper.with-stretch {
+  align-items: stretch;
+  justify-content: stretch;
+}
+
 .app-content {
   padding: 20px;
   display: flex;

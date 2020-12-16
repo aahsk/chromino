@@ -7,7 +7,23 @@ import enumeratum._
 @JSExportTopLevel("Position")
 case class Position(x: Int, y: Int)
 
-sealed trait Rotation extends EnumEntry
+sealed trait Rotation extends EnumEntry {
+  import Rotation._
+
+  def clockwise(): Rotation = this match {
+    case N => E
+    case W => N
+    case S => W
+    case E => S
+  }
+
+  def antiClockwise(): Rotation = this match {
+    case N => W
+    case W => S
+    case S => E
+    case E => N
+  }
+}
 
 @JSExportTopLevel("Rotation")
 case object Rotation extends Enum[Rotation] with CirceEnum[Rotation] {
@@ -33,18 +49,4 @@ case object Rotation extends Enum[Rotation] with CirceEnum[Rotation] {
   final case object E extends Rotation
 
   val values = findValues
-
-  def clockwise(r: Rotation): Rotation = r match {
-    case N => E
-    case W => N
-    case S => W
-    case E => S
-  }
-
-  def antiClockwise(r: Rotation): Rotation = r match {
-    case N => W
-    case W => S
-    case S => E
-    case E => N
-  }
 }

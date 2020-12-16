@@ -4,6 +4,7 @@ import {
 } from 'react-router-dom';
 import { ChrominoSocket, envWebSocketHost, urlNick, urlGameName, urlPlayerCount } from './ChrominoSocket';
 import { GameState, Rotation, Position } from './Domain';
+import GameBoard from './GameBoard';
 
 function Game() {
   const location = useLocation();
@@ -43,10 +44,20 @@ function Game() {
         </h4>
       </div>
       <div className="app-wrapper with-header">
-        <div className="app-content with-header">
+        <div className="app-content with-header with-stretch">
           {!socketActive && "broken connection"}
           {socketActive && gameState?.waitingPlayers && "waiting for more players"}
-          {socketActive && !gameState?.waitingPlayers && "game active"}
+          {socketActive && gameState && !gameState.waitingPlayers && (
+            <GameBoard
+              chrominoP={chrominoP}
+              setChrominoP={setChrominoP}
+              chrominoR={chrominoR}
+              setChrominoR={setChrominoR}
+              activeChrominoIndex={activeChrominoIndex}
+              setActiveChrominoIndex={setActiveChrominoIndex}
+              gameState={gameState as GameState}
+            ></GameBoard>
+          )}
         </div>
         <div className="app-sidebar with-header">
           <h4>Info</h4>

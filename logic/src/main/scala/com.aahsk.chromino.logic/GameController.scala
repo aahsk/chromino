@@ -33,14 +33,18 @@ class GameController[F[_]: Sync](
     val user = User(nick)
 
     // Add user to game
-    game.players.find(_.nick == nick) match {
-      case None    => game = game.copy(players = game.players :+ user)
-      case Some(_) => ()
+    if (game.waitingPlayers) {
+      game.players.find(_.nick == nick) match {
+        case None    => game = game.copy(players = game.players :+ user)
+        case Some(_) => ()
+      }
     }
 
     // If appropriate, start game
-    if (game.players.length == game.expectedPlayerCount) {
-      startGame()
+    if (game.waitingPlayers) {
+      if (game.players.length == game.expectedPlayerCount) {
+        startGame()
+      }
     }
 
     // Store old connection if exists
