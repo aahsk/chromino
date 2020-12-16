@@ -46,6 +46,8 @@ export const buildGameUrl = (host: string, gameName: string, nick: string, playe
 export class ChrominoSocket {
     config: ChrominoSocketConfig
     socket: WebSocket | null = null
+    lastMoveSubmit: number = Date.now()
+
     constructor(socketConfig: ChrominoSocketConfig) {
         console.log("init")
         this.config = socketConfig
@@ -132,6 +134,10 @@ export class ChrominoSocket {
         const chromino = this.config.gameState?.requesterChrominos[this.config.activeChrominoIndex]
         if (!chromino) return;
 
+        const throttleSeconds = 0.5
+        const now = Date.now()
+        if ((now - this.lastMoveSubmit) / 1000 < throttleSeconds) return;
+
         const boardChromino: BoardChromino = {
             centerPosition: this.config.chrominoP,
             centerRotation: this.config.chrominoR,
@@ -146,6 +152,7 @@ export class ChrominoSocket {
         }
 
         console.log("submit", message)
+        this.lastMoveSubmit = now;
         this.socket.send(JSON.stringify(message))
     }
 
