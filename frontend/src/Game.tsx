@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  useLocation
-} from 'react-router-dom';
-import { ChrominoSocket, envWebSocketHost, urlNick, urlGameName, urlPlayerCount } from './ChrominoSocket';
+import { useLocation } from 'react-router-dom';
+import { ChrominoSocket, envWebSocketHost, urlNick, urlGameName, urlPlayerCount, ChrominoSocketConfig } from './ChrominoSocket';
 import { GameState, Rotation, Position } from './Domain';
 import GameBoard from './GameBoard';
 import { ScalaWrapper } from './ScalaWrapper';
+import Messenger, { MessengerConfig, DatedMessage, Message } from './Messenger';
 
 function Game() {
   const location = useLocation();
@@ -13,6 +12,8 @@ function Game() {
   const [socketActive, setSocketActive] = useState<boolean>(false);
   const [socketError, setSocketError] = useState<string|null>(null);
   const [initialized, setInitialized] = useState<boolean>(false);
+  const [messenger, setMessenger] = useState<Messenger|null>(null);
+  const [messages, setMessages] = useState<Array<DatedMessage>>([]);
 
   const [gameState, setGameState] = useState<GameState|null>(null);
   const [activeChrominoIndex, setActiveChrominoIndex] = useState<number|null>(null);
@@ -22,8 +23,9 @@ function Game() {
   const gameName = urlGameName(location)
   const selfNick = urlNick(location)
   const playerCount = urlPlayerCount(location)
+
   useEffect(() => {
-    const socketProps = {
+    const socketProps: ChrominoSocketConfig = {
       setSocketActive,
       setSocketError,
       host: envWebSocketHost(),
@@ -35,16 +37,35 @@ function Game() {
       chrominoR,
   
       activeChrominoIndex,
-      setActiveChrominoIndex
+      setActiveChrominoIndex,
+
+      pushMessage: (msg: Message) => {
+        if (!messenger) {
+          console.log("couldn't display error: ", msg);
+          return;
+        }
+        messenger.pushMessage(msg);
+      }
+    };
+
+    const messengerProps: MessengerConfig = {
+      messages,
+      setMessages
     };
 
     if (!initialized) {
       const socket = new ChrominoSocket(socketProps)
       setSocket(socket);
       socket.start(gameName, selfNick, playerCount);
+
+      const messenger = new Messenger(messengerProps)
+      setMessenger(messenger);
+
       setInitialized(true);
-    } else if (!!socket) {
-      socket.config = socketProps
+    } else {
+      if (!!socket) socket.config = socketProps
+      if (!!messenger) messenger.config = messengerProps
+      console.log(messages)
     }
   });
 
@@ -58,6 +79,7 @@ function Game() {
       </div>
       <div className="app-wrapper with-header">
         <div className="app-content with-header with-stretch">
+          {messenger?.render(messages)}
           {(!socket || !socketActive) && "broken connection"}
           {socket && socketActive && gameState?.waitingPlayers && "waiting for more players"}
           {socket && socketActive && gameState && !gameState.waitingPlayers && (
@@ -68,9 +90,7 @@ function Game() {
               setChrominoR={setChrominoR}
               activeChrominoIndex={activeChrominoIndex}
               setActiveChrominoIndex={setActiveChrominoIndex}
-
               submitMove={socket.submitMove.bind(socket)}
-
               gameState={gameState as GameState}
             ></GameBoard>
           )}

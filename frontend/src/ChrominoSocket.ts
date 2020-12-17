@@ -1,6 +1,8 @@
 import * as H from 'history';
 import { GameState, Position, Rotation, BoardChromino } from './Domain';
 import { ScalaWrapper } from './ScalaWrapper';
+import { Message } from './Messenger';
+import { MessageType } from './Messenger';
 
 export interface ChrominoSocketConfig {
     setSocketActive: React.Dispatch<React.SetStateAction<boolean>>
@@ -15,6 +17,8 @@ export interface ChrominoSocketConfig {
 
     activeChrominoIndex: number|null
     setActiveChrominoIndex: React.Dispatch<React.SetStateAction<number|null>>
+
+    pushMessage: (msg: Message) => void
 }
 
 export const envWebSocketHost = (): string | null => {
@@ -49,7 +53,6 @@ export class ChrominoSocket {
     lastMoveSubmit: number = Date.now()
 
     constructor(socketConfig: ChrominoSocketConfig) {
-        console.log("init")
         this.config = socketConfig
         this.submitMove.bind(this)
     }
@@ -151,7 +154,7 @@ export class ChrominoSocket {
             }
         }
 
-        console.log("submit", message)
+        console.log("submit move")
         this.lastMoveSubmit = now;
         this.socket.send(JSON.stringify(message))
     }
@@ -166,6 +169,9 @@ export class ChrominoSocket {
                 break;
             case ("connectionMigrated"):
                 this.connectionMigrated(payload)
+                break;
+            case ("invalidMoveError"):
+                this.invalidMoveError(payload)
                 break;
             default:
                 console.log(`received unknown message ${command}`)
@@ -190,12 +196,31 @@ export class ChrominoSocket {
 
     gameStateMessage(payload: any) {
         console.log("game state changed")
-        const state = ("state" in payload) ? payload["state"] : [];
+        const state: GameState = ("state" in payload) ? payload["state"] : {};
+        const successMove = this.config.gameState?.activePlayerIndex != null && state?.activePlayerIndex !== this.config.gameState?.activePlayerIndex;
         this.resetActiveChrominoIndex(state)
         this.config.setGameState(state)
+        if (successMove) {
+            this.config.pushMessage({
+                type: MessageType.Success,
+                text: "Move successful",
+                expireSeconds: 2.5
+            });
+        }
     }
 
     connectionMigrated(payload: any) {
         this.stop("This nickname has a new connection")
+    }
+
+    invalidMoveError(payload: any) {
+        console.log("last move was invalid")
+        const error = ("error" in payload) ? payload["error"] : null;
+        if (!error) return;
+        this.config.pushMessage({
+            type: MessageType.Error,
+            text: error,
+            expireSeconds: 2.5
+        });
     }
 }

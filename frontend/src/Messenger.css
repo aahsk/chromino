@@ -1,0 +1,22 @@
+.message-container {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  max-width: 400px;
+}
+
+.message {
+  padding: 10px;
+  margin-bottom: 10px;
+  background: rgb(47, 47, 47);
+  border: 4px solid black;
+  font-size: calc(10px + 1vmin);
+}
+
+.message.error {
+  background: rgb(66, 8, 8);
+}
+
+.message.success {
+  background: rgb(8, 66, 23);
+}
