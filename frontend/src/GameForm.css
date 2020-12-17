@@ -12,10 +12,12 @@
   margin-bottom: 20px;
   min-width: 100%;
   justify-content: space-between;
+  font-size: calc(10px + 1.5vmin);
 }
 
 .form-text input {
   margin-left: 20px;
+  font-size: calc(10px + 1.5vmin);
 }
 
 .form-submit {
