@@ -2,7 +2,6 @@ package com.aahsk.chromino.domain
 
 import enumeratum.{CirceEnum, Enum, EnumEntry}
 import scala.scalajs.js.annotation._
-import enumeratum._
 
 @JSExportTopLevel("Position")
 case class Position(x: Int, y: Int)

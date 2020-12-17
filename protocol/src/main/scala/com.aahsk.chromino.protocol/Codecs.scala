@@ -21,6 +21,7 @@ import scala.scalajs.js.annotation._
 object Codecs {
   import Message._
 
+  // Entities
   implicit val UserCodec: Codec[User]                     = deriveCodec[User]
   implicit val ChrominoColorCodec: Codec[ChrominoColor]   = deriveCodec[ChrominoColor]
   implicit val ChrominoCodec: Codec[Chromino]             = deriveCodec[Chromino]
@@ -35,11 +36,12 @@ object Codecs {
   implicit val GameStateMessageCodec: Codec[GameStateMessage]     = deriveCodec[GameStateMessage]
   implicit val MessageParseErrorCodec: Codec[MessageParseError]   = deriveCodec[MessageParseError]
   implicit val GameNotFoundErrorCodec: Codec[GameNotFoundError]   = deriveCodec[GameNotFoundError]
-  implicit val PingCodec: Codec[Ping]                             = deriveCodec[Ping]
-  implicit val PongCodec: Codec[Pong]                             = deriveCodec[Pong]
   implicit val ConnectionMigratedCodec: Codec[ConnectionMigrated] = deriveCodec[ConnectionMigrated]
   implicit val PlayerJoinedCodec: Codec[PlayerJoined]             = deriveCodec[PlayerJoined]
   implicit val SubmitMoveCodec: Codec[SubmitMove]                 = deriveCodec[SubmitMove]
+  implicit val InvalidMoveCodec: Codec[InvalidMoveError]          = deriveCodec[InvalidMoveError]
+  implicit val ReceivedOutgoingErrorCodec: Codec[ReceivedOutgoingError] =
+    deriveCodec[ReceivedOutgoingError]
 
   // Message
   implicit val MessageWrapCodec: Codec[MessageWrap] = deriveCodec[MessageWrap]
@@ -50,32 +52,27 @@ object Codecs {
       Decoder[MessageParseError].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap("gameNotFoundError", payload) =>
       Decoder[GameNotFoundError].widen[Message].decodeJson(payload).leftMap(_.message)
-    case MessageWrap("ping", payload) =>
-      Decoder[Ping].widen[Message].decodeJson(payload).leftMap(_.message)
-    case MessageWrap("pong", payload) =>
-      Decoder[Pong].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap("connectionMigrated", payload) =>
       Decoder[ConnectionMigrated].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap("playerJoined", payload) =>
       Decoder[PlayerJoined].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap("submitMove", payload) =>
-      Decoder[PlayerJoined].widen[Message].decodeJson(payload).leftMap(_.message)
+      Decoder[SubmitMove].widen[Message].decodeJson(payload).leftMap(_.message)
+    case MessageWrap("invalidMoveError", payload) =>
+      Decoder[InvalidMoveError].widen[Message].decodeJson(payload).leftMap(_.message)
+    case MessageWrap("receivedOutgoingError", payload) =>
+      Decoder[ReceivedOutgoingError].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap(_, _) => Left("Unknown command constant")
   }
   implicit val MessageEncoder: Encoder[Message] = Encoder.instance {
-    case m: GameStateMessage   => MessageWrap("gameStateMessage", m.asJson).asJson
-    case m: MessageParseError  => MessageWrap("messageParseError", m.asJson).asJson
-    case m: GameNotFoundError  => MessageWrap("gameNotFoundError", m.asJson).asJson
-    case m: Ping               => MessageWrap("ping", m.asJson).asJson
-    case m: Pong               => MessageWrap("pong", m.asJson).asJson
-    case m: ConnectionMigrated => MessageWrap("connectionMigrated", m.asJson).asJson
-    case m: PlayerJoined       => MessageWrap("playerJoined", m.asJson).asJson
-    case m: SubmitMove         => MessageWrap("submitMove", m.asJson).asJson
+    case m: GameStateMessage      => MessageWrap("gameStateMessage", m.asJson).asJson
+    case m: MessageParseError     => MessageWrap("messageParseError", m.asJson).asJson
+    case m: GameNotFoundError     => MessageWrap("gameNotFoundError", m.asJson).asJson
+    case m: ConnectionMigrated    => MessageWrap("connectionMigrated", m.asJson).asJson
+    case m: PlayerJoined          => MessageWrap("playerJoined", m.asJson).asJson
+    case m: SubmitMove            => MessageWrap("submitMove", m.asJson).asJson
+    case m: InvalidMoveError      => MessageWrap("invalidMoveError", m.asJson).asJson
+    case m: ReceivedOutgoingError => MessageWrap("receivedOutgoingError", m.asJson).asJson
   }
   implicit val MessageCodec: Codec[Message] = Codec.from(MessageDecoder, MessageEncoder)
-
-  object JSParseHelper {
-    @JSExportTopLevel("parseMessage")
-    def parseMessage(text: String): Either[circe.Error, Message] = decode[Message](text)
-  }
 }

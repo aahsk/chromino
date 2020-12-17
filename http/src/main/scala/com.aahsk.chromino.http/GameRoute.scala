@@ -2,7 +2,7 @@ package com.aahsk.chromino.http
 
 import cats.implicits._
 import cats.{Applicative, Monad}
-import cats.effect.{ConcurrentEffect, Sync}
+import cats.effect.ConcurrentEffect
 import cats.effect.concurrent.Ref
 import com.aahsk.chromino.logic.GameController
 import com.aahsk.chromino.protocol.{GameState, Message}
@@ -28,12 +28,12 @@ case class GameRoute[F[_]: ConcurrentEffect: Monad](
     nick: String,
     maybeMessage: Either[Error, Message],
     controllers: List[GameController[F]]
-  ): (List[GameController[F]], F[Message]) =
+  ): (List[GameController[F]], F[Option[Message]]) =
     (maybeMessage, controllers.find(_.game.name == gameName)) match {
       case (Right(message), Some(controller)) => (controllers, controller.process(nick, message))
       case (Left(decodeError), _) =>
-        (controllers, Applicative[F].pure(MessageParseError(decodeError.getMessage)))
-      case (_, None) => (controllers, Applicative[F].pure(GameNotFoundError()))
+        (controllers, Applicative[F].pure(Some(MessageParseError(decodeError.getMessage))))
+      case (_, None) => (controllers, Applicative[F].pure(Some(GameNotFoundError())))
     }
 
   def joinGame(
@@ -83,10 +83,13 @@ case class GameRoute[F[_]: ConcurrentEffect: Monad](
       case WebSocketFrame.Text(text, _) =>
         for {
           maybeMessage <- Monad[F].pure(decode[Message](text))
-          result <- gameControllers
+          maybeResult <- gameControllers
             .modify(controllers => processMessage(gameName, nick, maybeMessage, controllers))
             .flatten
-          _ <- clientOutQueue.enqueue1(result)
+          _ <- maybeResult match {
+            case Some(result) => clientOutQueue.enqueue1(result)
+            case None         => Monad[F].pure(())
+          }
         } yield ()
       case Close(_) =>
         gameControllers

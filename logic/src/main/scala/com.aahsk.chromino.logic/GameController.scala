@@ -5,23 +5,36 @@ import cats.implicits._
 import cats.Monad
 import cats.effect.Sync
 import fs2.concurrent.Queue
-import com.aahsk.chromino.domain.{Board, BoardChromino, Chromino, Game, Position, Rotation, User}
-import com.aahsk.chromino.protocol.{GameState, Message}
+import com.aahsk.chromino.domain.{BoardChromino, Game}
+import com.aahsk.chromino.protocol.{GameState, Message, Outgoing}
 import com.aahsk.chromino.protocol.Message.{
   ConnectionMigrated,
   GameStateMessage,
+  InvalidMoveError,
   PlayerJoined,
-  Pong
+  ReceivedOutgoingError,
+  SubmitMove
 }
 
 /** Author's note: This could probably be made functional by not using an effectful
-  *  queue, but rather by using to-be-sent-out messages in method returns
+  *  queue, but rather by using Map[Nick, Messages] in method returns and pushing effects to route
   */
 class GameController[F[_]: Sync](
   var game: Game,
   var toPlayers: Map[String, Queue[F, Message]]
 ) {
-  def process(nick: String, message: Message): F[Message] = Monad[F].pure(Pong())
+  def process(nick: String, message: Message): F[Option[Message]] = message match {
+    case _: Outgoing => Monad[F].pure(Some(ReceivedOutgoingError()))
+    case SubmitMove(boardChromino: BoardChromino) =>
+      GameLogic.submitMove(game, nick, boardChromino) match {
+        case Left(error) => Monad[F].pure(Some(InvalidMoveError(error)))
+        case Right(newGame) =>
+          game = newGame
+          broadcastToNick[GameStateMessage](nick => GameStateMessage(GameState.of(game, nick)))
+            .as(None)
+      }
+  }
+
   def broadcastToNick[M <: Message](getMessageByNick: String => M): F[Unit] = {
     toPlayers.toList
       .map { case (nick, queue) =>
@@ -62,7 +75,7 @@ class GameController[F[_]: Sync](
 
   def disconnectPlayer(nick: String): F[Unit] = {
     toPlayers = toPlayers.removed(nick)
-    Monad[F].pure()
+    Monad[F].pure(())
   }
 }
 
