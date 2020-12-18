@@ -1,10 +1,17 @@
 import Dependencies._
+import org.scalajs.linker.interface.OutputPatterns
 
 ThisBuild / organization := "com.aahsk.chromino"
 ThisBuild / scalaVersion := "2.13.4"
 
 lazy val commonSettings = Seq(
-//  scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+  Test / scalaJSLinkerConfig ~= {
+    _.withModuleKind(ModuleKind.ESModule)
+      .withOutputPatterns(OutputPatterns.fromJSFile("scala.mjs"))
+  },
+  Compile / scalaJSLinkerConfig ~= {
+    _.withModuleKind(ModuleKind.ESModule)
+  },
   libraryDependencies ++= Seq(
     "org.scalatest" %%% "scalatest" % scalaTestVersion % Test
   ),

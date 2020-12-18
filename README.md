@@ -2,6 +2,18 @@
 End-of-bootcamp MVP Scala project. Browser-base, multi-player [Chromino](https://en.wikipedia.org/wiki/Chromino)
 server/client.
 
+# Quick start
+```
+sbt test
+sbt compile
+sbt fastOptJS
+./scala-transfer.sh
+
+# These should run in parallel
+sbt boot/run &
+cd ./frontend; npm run start &
+```
+
 # Tech stack
 - WebSocket [(see game route)](src/main/scala/com.aahsk.chromino.http/GameRoute.scala)
 - Cats Effect 2 (sprinkled literally everywhere) 
