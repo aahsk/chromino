@@ -7,8 +7,8 @@ trait ChrominoBlueprint extends Equals {
 
   override def canEqual(that: Any): Boolean =
     that match {
-      case chromino: ChrominoBlueprint => true
-      case _                           => false
+      case _: ChrominoBlueprint => true
+      case _                    => false
     }
 
   override def equals(that: Any): Boolean =

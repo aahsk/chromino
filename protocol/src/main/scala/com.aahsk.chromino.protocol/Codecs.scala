@@ -11,12 +11,8 @@ import com.aahsk.chromino.domain.{
 }
 import io.circe.generic.semiauto.deriveCodec
 import io.circe.{Codec, Decoder, Encoder}
-import io.circe.parser._
 import io.circe.syntax._
 import cats.implicits._
-import io.circe
-
-import scala.scalajs.js.annotation._
 
 object Codecs {
   import Message._
