@@ -15,14 +15,14 @@ class CodecsSpec extends AnyFreeSpec {
     )
   }
 
-  "ping message should be decodable" in {
-    val ping = "{}"
-    assert(decode[Ping](ping) == Right(Ping()))
+  "invalid move message should be decodable" in {
+    val ping = "{ \"error\": \"Bad move\" }"
+    assert(decode[InvalidMoveError](ping) == Right(InvalidMoveError("Bad move")))
   }
 
-  "wrapped ping message should be decodable" in {
-    val ping = "{ \"command\": \"ping\", \"payload\": {} }"
+  "wrapped invalid move message should be decodable" in {
+    val ping = "{ \"command\": \"invalidMoveError\", \"payload\": { \"error\": \"Bad move\" } }"
 
-    assert(decode[Message](ping).leftMap(_.getMessage()) == Right(Ping()))
+    assert(decode[Message](ping).leftMap(_.getMessage()) == Right(InvalidMoveError("Bad move")))
   }
 }
