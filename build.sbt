@@ -5,13 +5,6 @@ ThisBuild / organization := "com.aahsk.chromino"
 ThisBuild / scalaVersion := "2.13.4"
 
 lazy val commonSettings = Seq(
-  Test / scalaJSLinkerConfig ~= {
-    _.withModuleKind(ModuleKind.ESModule)
-      .withOutputPatterns(OutputPatterns.fromJSFile("scala.mjs"))
-  },
-  Compile / scalaJSLinkerConfig ~= {
-    _.withModuleKind(ModuleKind.ESModule)
-  },
   libraryDependencies ++= Seq(
     "org.scalatest" %%% "scalatest" % scalaTestVersion % Test
   ),
@@ -23,11 +16,22 @@ lazy val commonSettings = Seq(
   )
 )
 
+lazy val scalajsSettings = Seq(
+  Test / scalaJSLinkerConfig ~= {
+    _.withModuleKind(ModuleKind.ESModule)
+      .withOutputPatterns(OutputPatterns.fromJSFile("scala.mjs"))
+  },
+  Compile / scalaJSLinkerConfig ~= {
+    _.withModuleKind(ModuleKind.ESModule)
+  }
+)
+
 lazy val root = (project in file("."))
   .aggregate(boot, domain, protocol)
 
 lazy val domain = (project in file("domain"))
   .enablePlugins(ScalaJSPlugin)
+  .settings(scalajsSettings: _*)
   .settings(commonSettings: _*)
   .settings(
     name := "domain",
@@ -81,6 +85,7 @@ lazy val http = (project in file("http"))
 lazy val protocol = (project in file("protocol"))
   .enablePlugins(ScalaJSPlugin)
   .dependsOn(domain)
+  .settings(scalajsSettings: _*)
   .settings(commonSettings: _*)
   .settings(
     name := "protocol",
