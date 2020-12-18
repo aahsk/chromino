@@ -35,11 +35,11 @@ A checked box means the feature has been at least started.
 - [x] Game, user, board & chromino piece models [(see domain)](src/main/scala/com/aahsk/chromino/domain)
 - [x] Model protocol commands planned in http4s server [(see protocol)](src/main/scala/com.aahsk.chromino.protocol)
 - [x] Game model logic / mechanics [(see game controller in logic)](src/main/scala/com.aahsk.chromino.logic/GameController.scala)
-- [ ] Realize user input validations
-- [ ] ~~(bonus) Database storage instead of in-memory~~
-- [ ] ~~(bonus) Timer for when a player's time to move expires~~
+- [x] Realize user input validations
 - [X] (bonus) Allow concurrent games [(see game route)](src/main/scala/com.aahsk.chromino.http/GameRoute.scala)
 - [X] (bonus) Game client (React) [(see frontend)](./frontend)
+- [ ] ~~(bonus) Database storage instead of in-memory~~
+- [ ] ~~(bonus) Timer for when a player's time to move expires~~
 
 # Notes from author
 - It seems that `scalatest` is incapable of testing with `ModuleKind.ESModule` enabled, comment it
