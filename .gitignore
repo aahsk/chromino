@@ -10,3 +10,12 @@ project/plugins/project/
 .history
 .cache
 .lib/
+
+## IDEs
+**/.bloop
+.bsp/
+.idea
+.vsc
+*~
+*.swp
+*.swo
