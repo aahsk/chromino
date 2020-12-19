@@ -139,36 +139,47 @@ object GameLogic {
         }
     } yield submitBoardChromino
 
+  private def composePostSubmissionBoard(
+    game: Game,
+    nick: String,
+    validBoardChromino: BoardChromino
+  ): Game = {
+    // Switch to next player move
+    val newPlayerIndex = (game.activePlayerIndex + 1) % game.players.size
+
+    // Remove the submitted chromino from players hand
+    val newPlayerChrominos = game.playerChrominos.map {
+      case (playerChrominosNick, chrominos) if playerChrominosNick == nick =>
+        (playerChrominosNick, chrominos.filterNot(_ == validBoardChromino.chromino))
+      case playerChrominos => playerChrominos
+    }
+
+    // Configure new board
+    game.copy(
+      board = game.board.copy(
+        pieces = game.board.pieces :+ validBoardChromino
+      ),
+      activePlayerIndex = newPlayerIndex,
+      playerChrominos = newPlayerChrominos
+    )
+  }
+
   def submitMove(
     game: Game,
     submitNick: String,
     submitBoardChromino: BoardChromino
-  ): Either[String, Game] = {
-    def composeNewBoard(nick: String, validBoardChromino: BoardChromino): Game = {
-      val newPlayerIndex = (game.activePlayerIndex + 1) % game.players.size
-      val newPlayerChrominos = game.playerChrominos.map {
-        case (playerChrominosNick, chrominos) if playerChrominosNick == nick =>
-          (playerChrominosNick, chrominos.filterNot(_ == validBoardChromino.chromino))
-        case playerChrominos => playerChrominos
-      }
-      val newPieces = game.board.pieces :+ validBoardChromino
-      val newBoard  = game.board.copy(pieces = newPieces)
-
-      game.copy(
-        board = newBoard,
-        activePlayerIndex = newPlayerIndex,
-        playerChrominos = newPlayerChrominos
-      )
-    }
-
+  ): Either[String, Game] =
     for {
-      validSubmittedChromino <- validateMoveSubmission(game, submitNick, submitBoardChromino)
+      validSubmittedChromino <- validateMoveSubmission(
+        game,
+        submitNick,
+        submitBoardChromino
+      )
       validBoardChromino <- validateBoardChromino(
         game.board.pieces,
         validSubmittedChromino
       )
-    } yield composeNewBoard(submitNick, validBoardChromino)
-  }
+    } yield composePostSubmissionBoard(game, submitNick, validBoardChromino)
 
   def joinPlayer(game: Game, nick: String): Game = {
     // Construct user
