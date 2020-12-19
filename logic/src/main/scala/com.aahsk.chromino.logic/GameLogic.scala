@@ -95,21 +95,30 @@ object GameLogic {
     }
   }
 
-  def submitMove(
+  def validateMoveSubmission(
     game: Game,
     submitNick: String,
     submitBoardChromino: BoardChromino
-  ): Either[String, Game] =
+  ): Either[String, BoardChromino] =
     for {
+      _ <- game.players
+        .lift(game.activePlayerIndex)
+        .map(_ => ())
+        .toRight("Game has no active player which can make moves")
+
+      activeUser <- game.players
+        .lift(game.activePlayerIndex)
+        .toRight("Game has no active player which can make moves")
+
       playerWithChrominos <- game.playerChrominos
         .find { case (nick, _) =>
           nick == submitNick
         }
         .toRight(s"Player '${submitNick}' is not present in game")
       (nick, playerChrominos) = playerWithChrominos
-      activeUser <- game.players
-        .lift(game.activePlayerIndex)
-        .toRight("Game has no active player which can make moves")
+      _ <- playerChrominos
+        .find(_ == submitBoardChromino.chromino)
+        .toRight("Chromino isn't available")
       _ <-
         if (activeUser.nick == nick) {
           Right(())
@@ -128,29 +137,38 @@ object GameLogic {
         } else {
           Right(())
         }
-      playerChromino <- playerChrominos
-        .find(_ == submitBoardChromino.chromino)
-        .toRight("Chromino isn't available")
-      submitRotation = submitBoardChromino.centerRotation
-      submitPosition = submitBoardChromino.centerPosition
-      validBoardChromino <- validateBoardChromino(
-        game.board.pieces,
-        BoardChromino(playerChromino, submitPosition, submitRotation)
-      )
-      newPlayerIndex = (game.activePlayerIndex + 1) % game.players.size
-      newPlayerChrominos = game.playerChrominos.map {
+    } yield submitBoardChromino
+
+  def submitMove(
+    game: Game,
+    submitNick: String,
+    submitBoardChromino: BoardChromino
+  ): Either[String, Game] = {
+    def composeNewBoard(nick: String, validBoardChromino: BoardChromino): Game = {
+      val newPlayerIndex = (game.activePlayerIndex + 1) % game.players.size
+      val newPlayerChrominos = game.playerChrominos.map {
         case (playerChrominosNick, chrominos) if playerChrominosNick == nick =>
           (playerChrominosNick, chrominos.filterNot(_ == validBoardChromino.chromino))
         case playerChrominos => playerChrominos
       }
-      newPieces = game.board.pieces :+ validBoardChromino
-      newBoard  = game.board.copy(pieces = newPieces)
-      newGame = game.copy(
+      val newPieces = game.board.pieces :+ validBoardChromino
+      val newBoard  = game.board.copy(pieces = newPieces)
+
+      game.copy(
         board = newBoard,
         activePlayerIndex = newPlayerIndex,
         playerChrominos = newPlayerChrominos
       )
-    } yield newGame
+    }
+
+    for {
+      validSubmittedChromino <- validateMoveSubmission(game, submitNick, submitBoardChromino)
+      validBoardChromino <- validateBoardChromino(
+        game.board.pieces,
+        validSubmittedChromino
+      )
+    } yield composeNewBoard(submitNick, validBoardChromino)
+  }
 
   def joinPlayer(game: Game, nick: String): Game = {
     // Construct user
