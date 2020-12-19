@@ -48,31 +48,35 @@ function GameBoard(props: GameBoardProps) {
     )
   }
 
-  const handlePress = (evt: KeyboardEvent<HTMLDivElement>) => {
-    if (evt.key === "ArrowUp") props.setChrominoP({
+  const handleKeypress = (key: string) => {
+    if (key === "ArrowUp") props.setChrominoP({
       x: props.chrominoP.x,
       y: props.chrominoP.y + 1
     })
-    if (evt.key === "ArrowDown") props.setChrominoP({
+    if (key === "ArrowDown") props.setChrominoP({
       x: props.chrominoP.x,
       y: props.chrominoP.y - 1
     })
-    if (evt.key === "ArrowLeft") props.setChrominoP({
+    if (key === "ArrowLeft") props.setChrominoP({
       x: props.chrominoP.x + 1,
       y: props.chrominoP.y
     })
-    if (evt.key === "ArrowRight") props.setChrominoP({
+    if (key === "ArrowRight") props.setChrominoP({
       x: props.chrominoP.x - 1,
       y: props.chrominoP.y
     })
     const prevIndex = Math.max(0, (props.activeChrominoIndex || 0) - 1)
     const nextIndex = Math.min((props.activeChrominoIndex || 0) + 1, Math.max(0, props.gameState.requesterChrominos.length - 1))
-    if (evt.key === "q") props.setActiveChrominoIndex(prevIndex)
-    if (evt.key === "w") props.setChrominoR(ScalaWrapper.rotateClockwise(ScalaWrapper.toScala(props.chrominoR)))
-    if (evt.key === "e") props.setChrominoR(ScalaWrapper.rotateAntiClockwise(ScalaWrapper.toScala(props.chrominoR)))
-    if (evt.key === "r") props.setActiveChrominoIndex(nextIndex)
-    if (evt.key === "f") props.submitMove()
-    if (evt.key === "a") props.skipMove()
+    if (key === "q") props.setActiveChrominoIndex(prevIndex)
+    if (key === "w") props.setChrominoR(ScalaWrapper.rotateClockwise(ScalaWrapper.toScala(props.chrominoR)))
+    if (key === "e") props.setChrominoR(ScalaWrapper.rotateAntiClockwise(ScalaWrapper.toScala(props.chrominoR)))
+    if (key === "r") props.setActiveChrominoIndex(nextIndex)
+    if (key === "f") props.submitMove()
+    if (key === "a") props.skipMove()
+  }
+
+  const handlePress = (evt: KeyboardEvent<HTMLDivElement>) => {
+    handleKeypress(evt.key)
   }
 
   const placedSquares: Array<ChrominoSquare> = props.gameState.board.pieces.flatMap((boardChromino) => {
@@ -101,6 +105,18 @@ function GameBoard(props: GameBoardProps) {
 
   return (
     <div className="game-board-wrap" onKeyDown={handlePress} tabIndex={0}>
+      <div className="controls">
+        <div><span className="control up" onClick={() => handleKeypress("ArrowUp")}>[↑] Up</span></div>
+        <div><span className="control down" onClick={() => handleKeypress("ArrowDown")}>[↓] Down</span></div>
+        <div><span className="control left" onClick={() => handleKeypress("ArrowLeft")}>[←] Left</span></div>
+        <div><span className="control right" onClick={() => handleKeypress("ArrowRight")}>[→] Right</span></div>
+        <div><span className="control previous" onClick={() => handleKeypress("q")}>[q] Previous chromino</span></div>
+        <div><span className="control next" onClick={() => handleKeypress("r")}>[r] Next chromino</span></div>
+        <div><span className="control clockwise" onClick={() => handleKeypress("e")}>[e] Rotate clockwise</span></div>
+        <div><span className="control anticlockwise" onClick={() => handleKeypress("w")}>[w] Rotate anticlockwise</span></div>
+        <div><span className="control skip" onClick={() => handleKeypress("a")}>[a] Skip move</span></div>
+        <div><span className="control place" onClick={() => handleKeypress("f")}>[f] Place chromino</span></div>
+      </div>
       <div className="game-board">
         {/* Render placed piece squares */}
         {placedSquares.map((square, index) => computeSquare(square, "placed", false, `placed-${index}`) )}

@@ -19,6 +19,21 @@
   height: 0;
 }
 
+.controls {
+  text-align: left;
+  font-size: calc(10px + 0.7vmin);
+  line-height: calc(10px + 1.8vmin);
+  font-family: monospace;
+}
+
+.control::selection {
+  background-color: transparent;
+}
+
+.control:active {
+  font-weight: bold;
+}
+
 .square {
   position: absolute;
   transform: translate(-50%, -50%);
