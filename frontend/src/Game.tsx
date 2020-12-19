@@ -5,8 +5,9 @@ import { GameState, Rotation, Position } from './Domain';
 import GameBoard from './GameBoard';
 import { ScalaWrapper } from './ScalaWrapper';
 import Messenger, { MessengerConfig, DatedMessage, Message } from './Messenger';
+import { withRouter } from 'react-router-dom';
 
-function Game() {
+function Game(props: any) {
   const location = useLocation();
   const [socket, setSocket] = useState<ChrominoSocket|null>(null);
   const [socketActive, setSocketActive] = useState<boolean>(false);
@@ -70,12 +71,20 @@ function Game() {
     }
   });
 
+  const toLobby = () => {
+    socket?.stop()
+    console.log('redirecting to lobby')
+    props.history.push({
+      pathname: '/'
+    })
+  }
+
   const isSelfTurn = (gameState?.players[gameState?.activePlayerIndex]?.nick === selfNick)
   return (
     <div className={`app ${isSelfTurn ? "self-turn" : "other-turn"}`}>
       <div className="app-header">
         <h4>
-          Chromino [{gameName}] :: {!socketActive ? "broken connection" : gameState?.waitingPlayers ? "waiting for players" : (gameState?.winnerIndex != null ? `'${gameState?.players[gameState?.winnerIndex].nick || "?"}' won this game` : `game is in session ${isSelfTurn ? "(your turn)" : `('${gameState?.players[gameState?.activePlayerIndex]?.nick || "?"}' turn)`}`)}
+          <span onClick={toLobby} className="logo">Chromino</span> [{gameName}] :: {!socketActive ? "broken connection" : gameState?.waitingPlayers ? "waiting for players" : (gameState?.winnerIndex != null ? `'${gameState?.players[gameState?.winnerIndex].nick || "?"}' won this game` : `game is in session ${isSelfTurn ? "(your turn)" : `('${gameState?.players[gameState?.activePlayerIndex]?.nick || "?"}' turn)`}`)}
         </h4>
       </div>
       <div className="app-wrapper with-header">
@@ -129,4 +138,4 @@ function Game() {
   );
 }
 
-export default Game
+export default withRouter(Game)

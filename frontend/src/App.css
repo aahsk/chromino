@@ -21,6 +21,14 @@ html {
   justify-content: center;
 }
 
+.logo:hover {
+  border-bottom: 4px solid white
+}
+
+.logo:active {
+  color: lightgrey
+}
+
 .app-wrapper {
   min-height: 100vh;
   display: flex;
