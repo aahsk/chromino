@@ -144,14 +144,25 @@ object GameLogic {
     nick: String,
     validBoardChromino: BoardChromino
   ): Game = {
-    // Switch to next player move
-    val newPlayerIndex = (game.activePlayerIndex + 1) % game.players.size
-
     // Remove the submitted chromino from players hand
     val newPlayerChrominos = game.playerChrominos.map {
       case (playerChrominosNick, chrominos) if playerChrominosNick == nick =>
         (playerChrominosNick, chrominos.filterNot(_ == validBoardChromino.chromino))
       case playerChrominos => playerChrominos
+    }
+
+    // Finish game if appropriate
+    val winnerIndex = newPlayerChrominos.toList.indexWhere { case (_, chrominos) =>
+      chrominos.isEmpty
+    } match {
+      case -1 => None
+      case n  => Some(n)
+    }
+
+    // Switch to next player move
+    val newPlayerIndex = winnerIndex match {
+      case Some(_) => -1
+      case None    => (game.activePlayerIndex + 1) % game.players.size
     }
 
     // Configure new board
@@ -160,7 +171,8 @@ object GameLogic {
         pieces = game.board.pieces :+ validBoardChromino
       ),
       activePlayerIndex = newPlayerIndex,
-      playerChrominos = newPlayerChrominos
+      playerChrominos = newPlayerChrominos,
+      winnerIndex = winnerIndex
     )
   }
 

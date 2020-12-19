@@ -1,7 +1,7 @@
 package com.aahsk.chromino.protocol
 
 import org.scalatest.freespec.AnyFreeSpec
-import com.aahsk.chromino.domain.{BoardChromino, Chromino, Position}
+import com.aahsk.chromino.domain.{BoardChromino, Chromino, Game, Position}
 import com.aahsk.chromino.domain.Chromino._
 import com.aahsk.chromino.domain.Rotation._
 import com.aahsk.chromino.logic.GameLogic
@@ -121,5 +121,27 @@ class GameLogicSpec extends AnyFreeSpec {
     assert(
       GameLogic.validateBoardChromino(existing, added) == Right(added)
     )
+  }
+
+  "game should finish when a player runs out of chrominos" in {
+    val initPiece  = BoardChromino(Chromino.WildcardYXP, Position(0, 0), N)
+    val johnsPiece = BoardChromino(Chromino.WildcardYXP, Position(0, -1), N)
+
+    val emptyGame       = GameLogic.createGame("game", "john", 3)
+    val finnJoinedGame  = GameLogic.joinPlayer(emptyGame, "finn")
+    val robinJoinedGame = GameLogic.joinPlayer(finnJoinedGame, "robin")
+    val johnCloseToWin = robinJoinedGame.copy(
+      // Set init piece to a non-random test piece
+      board = robinJoinedGame.board.copy(pieces = List(initPiece)),
+      // Remove all johns chrominos and leave one non-random test piece
+      playerChrominos = robinJoinedGame.playerChrominos.updated(
+        "john",
+        List(johnsPiece.chromino)
+      )
+    )
+    val johnWon = GameLogic.submitMove(johnCloseToWin, "john", johnsPiece)
+
+    assert(johnWon.isRight)
+    assert(johnWon.right.get.winnerIndex.contains(0))
   }
 }

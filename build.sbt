@@ -27,7 +27,7 @@ lazy val scalajsSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(boot, domain, protocol)
+  .aggregate(domain, logic, boot, http, protocol)
 
 lazy val domain = (project in file("domain"))
   .enablePlugins(ScalaJSPlugin)
