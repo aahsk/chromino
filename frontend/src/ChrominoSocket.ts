@@ -8,6 +8,7 @@ export interface ChrominoSocketConfig {
     setSocketActive: React.Dispatch<React.SetStateAction<boolean>>
     setSocketError: React.Dispatch<React.SetStateAction<string|null>>
     host: string|null
+    selfNick: string|null
 
     gameState: GameState|null
     setGameState: React.Dispatch<React.SetStateAction<GameState|null>>
@@ -50,7 +51,7 @@ export const buildGameUrl = (host: string, gameName: string, nick: string, playe
 export class ChrominoSocket {
     config: ChrominoSocketConfig
     socket: WebSocket | null = null
-    lastMoveSubmit: number = Date.now()
+    lastSubmission: number = Date.now()
 
     constructor(socketConfig: ChrominoSocketConfig) {
         this.config = socketConfig
@@ -139,7 +140,7 @@ export class ChrominoSocket {
 
         const throttleSeconds = 0.5
         const now = Date.now()
-        if ((now - this.lastMoveSubmit) / 1000 < throttleSeconds) return;
+        if ((now - this.lastSubmission) / 1000 < throttleSeconds) return;
 
         const boardChromino: BoardChromino = {
             centerPosition: this.config.chrominoP,
@@ -155,7 +156,27 @@ export class ChrominoSocket {
         }
 
         console.log("submit move")
-        this.lastMoveSubmit = now;
+        this.lastSubmission = now;
+        this.socket.send(JSON.stringify(message))
+    }
+
+    skipMove() {
+        if (!this.socket) return;
+        if (this.config.activeChrominoIndex == null) return;
+        const chromino = this.config.gameState?.requesterChrominos[this.config.activeChrominoIndex]
+        if (!chromino) return;
+
+        const throttleSeconds = 0.5
+        const now = Date.now()
+        if ((now - this.lastSubmission) / 1000 < throttleSeconds) return;
+
+        const message = {
+            command: "skipMove",
+            payload: {}
+        }
+
+        console.log("skip move")
+        this.lastSubmission = now;
         this.socket.send(JSON.stringify(message))
     }
 
@@ -197,13 +218,23 @@ export class ChrominoSocket {
     gameStateMessage(payload: any) {
         console.log("game state changed")
         const state: GameState = ("state" in payload) ? payload["state"] : {};
+        const selfMove = this.config.gameState?.players[this.config.gameState?.activePlayerIndex].nick === this.config.selfNick 
         const successMove = this.config.gameState?.activePlayerIndex != null && state?.activePlayerIndex !== this.config.gameState?.activePlayerIndex;
+        const winnerAnnounced = this.config.gameState?.winnerIndex === null && state?.winnerIndex !== null;
         this.resetActiveChrominoIndex(state)
         this.config.setGameState(state)
-        if (successMove) {
+        if (selfMove && successMove) {
             this.config.pushMessage({
                 type: MessageType.Success,
                 text: "Move successful",
+                expireSeconds: 2.5
+            });
+        }
+        if (winnerAnnounced) {
+            const winnerNick = state?.players[state?.winnerIndex || -1]?.nick || "?"
+            this.config.pushMessage({
+                type: MessageType.Success,
+                text: `${winnerNick} won this game`,
                 expireSeconds: 2.5
             });
         }

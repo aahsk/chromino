@@ -1,6 +1,5 @@
 package com.aahsk.chromino.logic
 
-import scala.util.Random
 import cats.implicits._
 import cats.Monad
 import cats.effect.Sync
@@ -13,6 +12,7 @@ import com.aahsk.chromino.protocol.Message.{
   InvalidMoveError,
   PlayerJoined,
   ReceivedOutgoingError,
+  SkipMove,
   SubmitMove
 }
 
@@ -27,6 +27,14 @@ class GameController[F[_]: Sync](
     case _: Outgoing => Monad[F].pure(Some(ReceivedOutgoingError()))
     case SubmitMove(boardChromino: BoardChromino) =>
       GameLogic.submitMove(game, nick, boardChromino) match {
+        case Left(error) => Monad[F].pure(Some(InvalidMoveError(error)))
+        case Right(newGame) =>
+          game = newGame
+          broadcastToNick[GameStateMessage](nick => GameStateMessage(GameState.of(game, nick)))
+            .as(None)
+      }
+    case SkipMove() =>
+      GameLogic.skipMove(game, nick) match {
         case Left(error) => Monad[F].pure(Some(InvalidMoveError(error)))
         case Right(newGame) =>
           game = newGame

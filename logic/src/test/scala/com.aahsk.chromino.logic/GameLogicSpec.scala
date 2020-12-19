@@ -1,10 +1,9 @@
 package com.aahsk.chromino.logic
 
 import org.scalatest.freespec.AnyFreeSpec
-import com.aahsk.chromino.domain.{BoardChromino, Chromino, Game, Position}
+import com.aahsk.chromino.domain.{BoardChromino, Chromino, Position}
 import com.aahsk.chromino.domain.Chromino._
 import com.aahsk.chromino.domain.Rotation._
-import com.aahsk.chromino.logic.GameLogic
 
 class GameLogicSpec extends AnyFreeSpec {
   "random chromino should pick something out" in {

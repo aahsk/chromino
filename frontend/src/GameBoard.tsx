@@ -12,6 +12,7 @@ export interface GameBoardProps {
   setActiveChrominoIndex: React.Dispatch<React.SetStateAction<number|null>>
 
   submitMove: () => void
+  skipMove: () => void
 
   gameState: GameState
 }
@@ -71,6 +72,7 @@ function GameBoard(props: GameBoardProps) {
     if (evt.key === "e") props.setChrominoR(ScalaWrapper.rotateAntiClockwise(ScalaWrapper.toScala(props.chrominoR)))
     if (evt.key === "r") props.setActiveChrominoIndex(nextIndex)
     if (evt.key === "f") props.submitMove()
+    if (evt.key === "a") props.skipMove()
   }
 
   const placedSquares: Array<ChrominoSquare> = props.gameState.board.pieces.flatMap((boardChromino) => {

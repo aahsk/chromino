@@ -14,6 +14,7 @@ object Message {
   final case class PlayerJoined(players: List[User])        extends Message with Outgoing
   final case class SubmitMove(boardChromino: BoardChromino) extends Message
   final case class InvalidMoveError(error: String)          extends Message with Outgoing
+  final case class SkipMove()                               extends Message
   final case class ReceivedOutgoingError()                  extends Message
 }
 

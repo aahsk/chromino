@@ -29,6 +29,7 @@ function Game() {
       setSocketActive,
       setSocketError,
       host: envWebSocketHost(),
+      selfNick,
       
       gameState,
       setGameState,
@@ -74,7 +75,7 @@ function Game() {
     <div className={`app ${isSelfTurn ? "self-turn" : "other-turn"}`}>
       <div className="app-header">
         <h4>
-          Chromino [{gameName}] :: {!socketActive ? "broken connection" : gameState?.waitingPlayers ? "waiting for players" : (gameState?.winnerIndex != null ? `'${gameState?.players[gameState?.winnerIndex].nick}' won this game` : `game is in session ${isSelfTurn ? "(your turn)" : `('${gameState?.players[gameState?.activePlayerIndex]?.nick || "?"}' turn)`}`)}
+          Chromino [{gameName}] :: {!socketActive ? "broken connection" : gameState?.waitingPlayers ? "waiting for players" : (gameState?.winnerIndex != null ? `'${gameState?.players[gameState?.winnerIndex].nick || "?"}' won this game` : `game is in session ${isSelfTurn ? "(your turn)" : `('${gameState?.players[gameState?.activePlayerIndex]?.nick || "?"}' turn)`}`)}
         </h4>
       </div>
       <div className="app-wrapper with-header">
@@ -91,6 +92,7 @@ function Game() {
               activeChrominoIndex={activeChrominoIndex}
               setActiveChrominoIndex={setActiveChrominoIndex}
               submitMove={socket.submitMove.bind(socket)}
+              skipMove={socket.skipMove.bind(socket)}
               gameState={gameState as GameState}
             ></GameBoard>
           )}

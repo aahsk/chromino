@@ -95,36 +95,11 @@ object GameLogic {
     }
   }
 
-  def validateMoveSubmission(
+  def validateUserSubmission(
     game: Game,
-    submitNick: String,
-    submitBoardChromino: BoardChromino
-  ): Either[String, BoardChromino] =
+    submitNick: String
+  ): Either[String, Unit] = {
     for {
-      _ <- game.players
-        .lift(game.activePlayerIndex)
-        .map(_ => ())
-        .toRight("Game has no active player which can make moves")
-
-      activeUser <- game.players
-        .lift(game.activePlayerIndex)
-        .toRight("Game has no active player which can make moves")
-
-      playerWithChrominos <- game.playerChrominos
-        .find { case (nick, _) =>
-          nick == submitNick
-        }
-        .toRight(s"Player '${submitNick}' is not present in game")
-      (nick, playerChrominos) = playerWithChrominos
-      _ <- playerChrominos
-        .find(_ == submitBoardChromino.chromino)
-        .toRight("Chromino isn't available")
-      _ <-
-        if (activeUser.nick == nick) {
-          Right(())
-        } else {
-          Left(s"Player '${activeUser.nick}' is moving")
-        }
       _ <-
         if (game.waitingPlayers) {
           Left("Game not started yet ")
@@ -137,6 +112,36 @@ object GameLogic {
         } else {
           Right(())
         }
+
+      activeUser <- game.players
+        .lift(game.activePlayerIndex)
+        .toRight(s"Its no ones move")
+
+      _ <-
+        if (activeUser.nick == submitNick) {
+          Right(())
+        } else {
+          Left(s"Player '${activeUser.nick}' is moving")
+        }
+    } yield ()
+  }
+
+  def validateChrominoMoveSubmission(
+    game: Game,
+    submitNick: String,
+    submitBoardChromino: BoardChromino
+  ): Either[String, BoardChromino] =
+    for {
+      _ <- validateUserSubmission(game, submitNick)
+      playerWithChrominos <- game.playerChrominos
+        .find { case (nick, _) =>
+          nick == submitNick
+        }
+        .toRight(s"Player '${submitNick}' is not present in game")
+      (_, playerChrominos) = playerWithChrominos
+      _ <- playerChrominos
+        .find(_ == submitBoardChromino.chromino)
+        .toRight("Chromino isn't available")
     } yield submitBoardChromino
 
   private def composePostSubmissionBoard(
@@ -182,7 +187,7 @@ object GameLogic {
     submitBoardChromino: BoardChromino
   ): Either[String, Game] =
     for {
-      validSubmittedChromino <- validateMoveSubmission(
+      validSubmittedChromino <- validateChrominoMoveSubmission(
         game,
         submitNick,
         submitBoardChromino
@@ -192,6 +197,16 @@ object GameLogic {
         validSubmittedChromino
       )
     } yield composePostSubmissionBoard(game, submitNick, validBoardChromino)
+
+  def skipMove(
+    game: Game,
+    submitNick: String
+  ): Either[String, Game] =
+    for {
+      _ <- validateUserSubmission(game, submitNick)
+    } yield game.copy(
+      activePlayerIndex = (game.activePlayerIndex + 1) % game.players.size
+    )
 
   def joinPlayer(game: Game, nick: String): Game = {
     // Construct user

@@ -35,6 +35,7 @@ object Codecs {
   implicit val ConnectionMigratedCodec: Codec[ConnectionMigrated] = deriveCodec[ConnectionMigrated]
   implicit val PlayerJoinedCodec: Codec[PlayerJoined]             = deriveCodec[PlayerJoined]
   implicit val SubmitMoveCodec: Codec[SubmitMove]                 = deriveCodec[SubmitMove]
+  implicit val SkipMoveCodec: Codec[SkipMove]                     = deriveCodec[SkipMove]
   implicit val InvalidMoveCodec: Codec[InvalidMoveError]          = deriveCodec[InvalidMoveError]
   implicit val ReceivedOutgoingErrorCodec: Codec[ReceivedOutgoingError] =
     deriveCodec[ReceivedOutgoingError]
@@ -56,6 +57,8 @@ object Codecs {
       Decoder[SubmitMove].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap("invalidMoveError", payload) =>
       Decoder[InvalidMoveError].widen[Message].decodeJson(payload).leftMap(_.message)
+    case MessageWrap("skipMove", payload) =>
+      Decoder[SkipMove].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap("receivedOutgoingError", payload) =>
       Decoder[ReceivedOutgoingError].widen[Message].decodeJson(payload).leftMap(_.message)
     case MessageWrap(_, _) => Left("Unknown command constant")
@@ -68,6 +71,7 @@ object Codecs {
     case m: PlayerJoined          => MessageWrap("playerJoined", m.asJson).asJson
     case m: SubmitMove            => MessageWrap("submitMove", m.asJson).asJson
     case m: InvalidMoveError      => MessageWrap("invalidMoveError", m.asJson).asJson
+    case m: SkipMove              => MessageWrap("skipMove", m.asJson).asJson
     case m: ReceivedOutgoingError => MessageWrap("receivedOutgoingError", m.asJson).asJson
   }
   implicit val MessageCodec: Codec[Message] = Codec.from(MessageDecoder, MessageEncoder)
