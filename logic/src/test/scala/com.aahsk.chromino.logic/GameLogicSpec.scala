@@ -1,4 +1,4 @@
-package com.aahsk.chromino.protocol
+package com.aahsk.chromino.logic
 
 import org.scalatest.freespec.AnyFreeSpec
 import com.aahsk.chromino.domain.{BoardChromino, Chromino, Game, Position}
