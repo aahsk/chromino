@@ -11,7 +11,7 @@ sbt fastOptJS
 
 # These should run in parallel
 sbt boot/run &
-cd ./frontend; npm run start &
+cd ./frontend; npm install; npm run start &
 ```
 
 # Tech stack
