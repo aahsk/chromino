@@ -1,5 +1,5 @@
 # Chromino
-End-of-bootcamp MVP Scala project. Browser-base, multi-player [Chromino](https://en.wikipedia.org/wiki/Chromino)
+End-of-bootcamp MVP Scala project. Browser-based, multi-player [Chromino](https://en.wikipedia.org/wiki/Chromino)
 server/client.
 
 # Quick start
@@ -44,8 +44,6 @@ A checked box means the feature has been at least started.
 - [ ] ~~(bonus) Timer for when a player's time to move expires~~
 
 # Notes from author
-- It seems that `scalatest` is incapable of testing with `ModuleKind.ESModule` enabled, comment it
-    in [build.sbt](./build.sbt) when testing  
 - It also seems that the `%%%` operator used in library definitions only works in some certain scopes, which I can't
     reproduce in [project/Dependencies](./project/Dependencies.scala), therefore JS libraries are explicitly defined
     in [build.sbt](./build.sbt)
@@ -56,5 +54,3 @@ A checked box means the feature has been at least started.
     `Help => Change Memory Settings`. In addition the IDE can throw `scalac: Error while emitting Codecs.scala; null`
     when trying to run the project, there is no known fix yet. See
     [protocol/src/main/scala/com.aahsk.chromino.protocol/Codecs.scala](./protocol/src/main/scala/com.aahsk.chromino.protocol/Codecs.scala)
-- The in-memory state shared between multiple web-socket connections is mutable and effectful. It feels quite imperative
-    using it with Cats Ref looks odd. Haven't yet figured out how to make it prettier
