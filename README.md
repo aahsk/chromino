@@ -14,13 +14,15 @@ sbt boot/run &
 cd ./frontend; npm install; npm run start &
 ```
 
-# Tech stack
+# Tech stack & etc.
 - WebSocket [(see game route)](./http/src/main/scala/com.aahsk.chromino.http/GameRoute.scala)
 - Cats Effect 2 (sprinkled literally everywhere) 
 - http4s [(see game route)](./http/src/main/scala/com.aahsk.chromino.http/GameRoute.scala)
 - In-memory storage (Cats Ref) [(see game route storage)](./http/src/main/scala/com.aahsk.chromino.http/GameRoute.scala)
 - React w/ TypeScript [(see frontend)](./frontend)
 - Scala.js & Circe [(see protocol)](./protocol/src/main/scala/com.aahsk.chromino.protocol)
+- Tagless final (used with cats effects)
+- FS2 (used with WebSockets)
 
 # Usage
 - `./scala-compile.sh` - Compiles Scala & Scala.JS code    
